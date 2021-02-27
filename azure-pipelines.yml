@@ -52,6 +52,11 @@ stages:
         buildType: 'current'
         targetPath: './tests/e2e/api/itlab-reports-api-build'
     - task: CmdLine@2
+      displayName: run api
+      inputs:
+        script: 'docker-compose --no-ansi up -d test-api'
+        workingDirectory: './tests/e2e/'
+    - task: CmdLine@2
       displayName: run testmace
       inputs:
         script: 'docker-compose --no-ansi up testmace'
