@@ -1,9 +1,5 @@
 name: $(BuildID)-$(Build.SourceBranchName)
 
-trigger:
-- master
-- develop
-
 resources:
 - repo: self
 
