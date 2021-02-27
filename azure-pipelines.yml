@@ -40,6 +40,16 @@ stages:
   displayName: Test reports service
   jobs:
   - job: Test
+    strategy:
+      matrix:
+        testmace:
+          serviceName: testmace
+          artifactsFolder: tests/e2e/out
+          reportsPattern: 'testmace*.xml'
+        karate:
+          serviceName: karate
+          artifactsFolder: tests/e2e/karate-out
+          reportsPattern: '*.xml'
     displayName: Test
 
     pool:
@@ -57,9 +67,9 @@ stages:
         script: 'docker-compose --no-ansi up -d test-api'
         workingDirectory: './tests/e2e/'
     - task: CmdLine@2
-      displayName: run karate
+      displayName: run $(serviceName)
       inputs:
-        script: 'docker-compose --no-ansi up karate'
+        script: 'docker-compose --no-ansi up $(serviceName)'
         workingDirectory: './tests/e2e/'
     - task: CmdLine@2
       displayName: show logs
@@ -68,13 +78,13 @@ stages:
         workingDirectory: './tests/e2e/'
     - task: CopyFiles@2
       inputs:
-        SourceFolder: 'tests/e2e/karate-out'
+        SourceFolder: $(artifactsFolder)
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
         CleanTargetFolder: true
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: '*.xml'
+        testResultsFiles: $(reportsPattern)
         searchFolder: '$(Build.ArtifactStagingDirectory)'
         failTaskOnFailedTests: true
