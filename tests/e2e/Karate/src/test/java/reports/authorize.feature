@@ -8,8 +8,14 @@ Scenario: Without authorize header
     When method get
     Then status 401
 
+Scenario: User without itlab: user claim
+    Given header Authorization = 'Bearer ' + noITLabUserAuthToken
+    Given path 'api', 'reports'
+    When method get
+    Then status 401
+
 Scenario: Success get reports
-    Given header Authorization = 'Bearer ' + authToken
+    Given header Authorization = 'Bearer ' + userAuthToken
     Given path 'api', 'reports'
     When method get
     Then status 200

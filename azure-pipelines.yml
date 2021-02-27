@@ -50,7 +50,7 @@ stages:
           serviceName: karate
           artifactsFolder: tests/e2e/karate-out
           reportsPattern: '*.xml'
-    displayName: Test
+    displayName: Test with
 
     pool:
       vmImage: 'ubuntu-latest'
