@@ -28,23 +28,7 @@ Scenario: Create self report
 Scenario: Create report about another employee
     * def reportText = uniqText()
     * def employee = 'another-employee'
-    Given request { text: '#(reportText)' }
-    Given param implementer = employee
-    When method post
-    Then status 200
-    And match response == 
-    """
-    {
-        id: '#present',
-        date: '#present',
-        archived: false,
-        assignees: {
-            reporter: '#(users.plain.id)',
-            implementer: '#(employee)'
-        },
-        text: '#(reportText)'
-    }
-    """
+    Then call read('create-report.feature') { text: '#(reportText)', employee: '#(employee)' }
 
 Scenario: Can not create empty string report
     * def reportText = ''
