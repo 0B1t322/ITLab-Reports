@@ -4,10 +4,9 @@ Background:
     Given url baseUrl
     Given path 'api', 'reports'
     Given header Authorization = 'Bearer ' + users.plain.accessToken
-    * def uniqText = function() { return 'uniq text ' + new Date().getTime() }
 
 Scenario: Create self report
-    * def reportText = uniqText()
+    * def reportText = 'report  body ' + uniqueText()
     Given request { text: '#(reportText)' }
     When method post
     Then status 200
@@ -26,8 +25,10 @@ Scenario: Create self report
     """
 
 Scenario: Create report about another employee
-    * def reportText = uniqText()
+    * def reportText = uniqueText()
     * def employee = 'another-employee'
+    * def userId = users.plain.id
+    * def accessToken = users.plain.accessToken
     Then call read('create-report.feature') { text: '#(reportText)', employee: '#(employee)' }
 
 Scenario: Can not create empty string report

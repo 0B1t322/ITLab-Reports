@@ -4,7 +4,7 @@ Feature: Creating one report
 Background:
     Given url baseUrl
     Given path 'api', 'reports'
-    Given header Authorization = 'Bearer ' + users.plain.accessToken
+    Given header Authorization = 'Bearer ' + accessToken
 
 Scenario:
     Given request { text: '#(text)' }
@@ -18,7 +18,7 @@ Scenario:
         date: '#present',
         archived: false,
         assignees: {
-            reporter: '#(users.plain.id)',
+            reporter: '#(userId)',
             implementer: '#(employee)'
         },
         text: '#(text)'

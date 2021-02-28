@@ -19,6 +19,7 @@ function fn() {
         baseUrl: 'http://localhost:8080/',
         createJwt: createJwt,
         createUserJwt: createUserJwt,
+        uniqueText: function() { return java.util.UUID.randomUUID() + '' },
         users: {
             admin: {
                 id: 'user-admin',
