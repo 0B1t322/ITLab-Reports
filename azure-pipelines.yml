@@ -55,6 +55,7 @@ stages:
       artifact: itlab-reports-build
 
 - stage: Test
+  dependsOn: Build
   condition: succeeded()
   displayName: Test reports service
   jobs:
@@ -109,6 +110,7 @@ stages:
         failTaskOnFailedTests: true
 
 - stage: buildImage
+  dependsOn: Build
   condition: ${{variables.buildImage}}
   displayName: Pack docker image
   jobs:
@@ -127,7 +129,7 @@ stages:
         tags: ${{variables.ImageTags}}
 - stage: deploy
   displayName: Deploy
-  condition: and(succeeded(), ${{variables.deployService}})
+  condition: ${{variables.deployService}}
   jobs:
     - deployment: Deploy
       pool:
