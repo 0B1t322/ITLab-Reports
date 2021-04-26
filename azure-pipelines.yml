@@ -43,20 +43,16 @@ stages:
       displayName: build
       inputs:
         command: 'build'
-        arguments: '-a -installsuffix cgo -o $(Pipeline.Workspace)/main -v'
+        arguments: '-a -installsuffix cgo -o $(Build.ArtifactStagingDirectory)/main -v'
         workingDirectory: 'src/ITLabReports/api'
     - task: CopyFiles@2
       inputs:
         SourceFolder: 'deploy'
         Contents: 'Dockerfile'
-        TargetFolder: '$(Pipeline.Workspace)'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
         OverWrite: true
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish build artifact'
-      inputs:
-        targetPath: '$(Pipeline.Workspace)'
-        artifact: 'itlab-reports-build'
-        publishLocation: 'pipeline'
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: itlab-reports-build
 
 - stage: Test
   condition: succeeded()
@@ -103,13 +99,13 @@ stages:
       inputs:
         SourceFolder: $(artifactsFolder)
         Contents: '**'
-        TargetFolder: '$(Pipeline.Workspace)'
+        TargetFolder: '$(Pipeline.Workspace)/test_result'
         CleanTargetFolder: true
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
         testResultsFiles: $(reportsPattern)
-        searchFolder: '$(Pipeline.Workspace)'
+        searchFolder: '$(Pipeline.Workspace)/test_result'
         failTaskOnFailedTests: true
 
 - stage: buildImage
