@@ -21,12 +21,18 @@ stages:
       displayName: build
       inputs:
         command: 'build'
-        arguments: '-a -installsuffix cgo -o deploy/main -v'
+        arguments: '-a -installsuffix cgo -o $(Build.ArtifactStagingDirectory)/main -v'
         workingDirectory: 'src/ITLabReports/api'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: 'deploy'
+        Contents: 'Dockerfile'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        OverWrite: true
     - task: PublishPipelineArtifact@1
       displayName: 'Publish build artifact'
       inputs:
-        targetPath: 'deploy'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
         artifact: 'itlab-reports-build'
         publishLocation: 'pipeline'
 
