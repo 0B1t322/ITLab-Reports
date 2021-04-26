@@ -115,6 +115,8 @@ stages:
   - job: build
     displayName: Build
     steps:
+    - download: current
+      artifact: itlab-reports-build
     - task: Docker@2
       inputs:
         containerRegistry: 'rtuitlab connection by admin'
