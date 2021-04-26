@@ -113,7 +113,7 @@ stages:
         failTaskOnFailedTests: true
 
 - stage: buildImage
-  condition: and(succeeded(), ${{variables.buildImage}})
+  condition: ${{variables.buildImage}}
   displayName: Pack docker image
   jobs:
   - job: build
