@@ -64,17 +64,17 @@ stages:
     - task: CmdLine@2
       displayName: run api
       inputs:
-        script: 'docker-compose --no-ansi up -d test-api'
+        script: 'docker-compose --ansi never up -d test-api'
         workingDirectory: './tests/e2e/'
     - task: CmdLine@2
       displayName: run $(serviceName)
       inputs:
-        script: 'docker-compose --no-ansi up $(serviceName)'
+        script: 'docker-compose --ansi never up $(serviceName)'
         workingDirectory: './tests/e2e/'
     - task: CmdLine@2
       displayName: show logs
       inputs:
-        script: 'docker-compose --no-ansi logs test-api'
+        script: 'docker-compose --ansi never logs test-api'
         workingDirectory: './tests/e2e/'
     - task: CopyFiles@2
       inputs:
