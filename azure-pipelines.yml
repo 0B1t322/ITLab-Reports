@@ -122,7 +122,7 @@ stages:
     - task: Docker@2
       inputs:
         containerRegistry: 'rtuitlab connection by admin'
-        repository: 'rtuitlab/itlab-reports'
+        repository: 'rtuitlab/itlab-reports-back'
         command: 'buildAndPush'
         Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
         buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
@@ -144,5 +144,5 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/itlab-reports:$(Build.BuildId) ${{variables.serviceName}} --with-registry-auth'
+                  commands: 'docker service update --image rtuitlab/itlab-reports-back:$(Build.BuildId) ${{variables.serviceName}} --with-registry-auth'
                   readyTimeout: '20000'
