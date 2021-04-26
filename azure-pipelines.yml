@@ -1,9 +1,5 @@
 name: $(BuildID)-$(Build.SourceBranchName)
 
-trigger:
-- master
-- develop
-
 resources:
 - repo: self
 
@@ -39,7 +35,17 @@ stages:
   displayName: Test reports service
   jobs:
   - job: Test
-    displayName: Test
+    strategy:
+      matrix:
+        testmace:
+          serviceName: testmace
+          artifactsFolder: tests/e2e/out
+          reportsPattern: 'testmace*.xml'
+        karate:
+          serviceName: karate
+          artifactsFolder: tests/e2e/karate-out
+          reportsPattern: '*.xml'
+    displayName: Test with
 
     pool:
       vmImage: 'ubuntu-latest'
@@ -51,9 +57,14 @@ stages:
         buildType: 'current'
         targetPath: './tests/e2e/api/itlab-reports-api-build'
     - task: CmdLine@2
-      displayName: run testmace
+      displayName: run api
       inputs:
-        script: 'docker-compose --no-ansi up testmace'
+        script: 'docker-compose --no-ansi up -d test-api'
+        workingDirectory: './tests/e2e/'
+    - task: CmdLine@2
+      displayName: run $(serviceName)
+      inputs:
+        script: 'docker-compose --no-ansi up $(serviceName)'
         workingDirectory: './tests/e2e/'
     - task: CmdLine@2
       displayName: show logs
@@ -62,13 +73,13 @@ stages:
         workingDirectory: './tests/e2e/'
     - task: CopyFiles@2
       inputs:
-        SourceFolder: 'tests/e2e/out'
+        SourceFolder: $(artifactsFolder)
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
         CleanTargetFolder: true
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: 'testmace*.xml'
+        testResultsFiles: $(reportsPattern)
         searchFolder: '$(Build.ArtifactStagingDirectory)'
         failTaskOnFailedTests: true

@@ -2,10 +2,13 @@ version: '3.7'
 services:
   api:
     build: './api'
+    environment:
+      ITLAB_REPORTS_MONGO_URI: mongodb://db:27017/ITLabReports
     ports:
       - '8080:8080'
     depends_on:
       - 'db'
+    restart: on-failure
   db:
     image: 'mongo:latest'
     ports:

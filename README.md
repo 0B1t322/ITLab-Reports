@@ -55,3 +55,19 @@ Example for jwks.json file
    ]
 }
 ```
+## E2E Tests
+
+1. Install JDK 1.8 (ensure JAVA_HOME env variable exist)
+2. Install Maven
+
+Run development environment
+```bash
+cd src/ITLabReports
+docker-compose up -d
+```
+Run tests
+```bash
+cd tests\e2e\Karate
+mvn clean install '-Dmaven.test.skip=true'
+mvn test '-Dtest=TestParallel.java'
+```
