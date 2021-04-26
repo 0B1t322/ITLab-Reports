@@ -8,7 +8,7 @@ RUN apk update \
 
 WORKDIR /app
 
-COPY ITLab-Reports/itlab-reports-build/main ./main
+COPY ./main ./main
 
 RUN chmod +x main
 
