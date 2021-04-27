@@ -31,13 +31,13 @@ Scenario: Create report about another employee
     * def accessToken = users.plain.accessToken
     Then call read('create-report.feature') { text: '#(reportText)', employee: '#(employee)' }
 
-Scenario: Can not create empty string report
-    * def reportText = ''
-    Given request { text: '#(reportText)' }
-    When method post
-    Then status 400
+# Scenario: Can not create empty string report
+#     * def reportText = ''
+#     Given request { text: '#(reportText)' }
+#     When method post
+#     Then status 400
 
-Scenario: Can not create report with empty body
-    Given request { }
-    When method post
-    Then status 400
+# Scenario: Can not create report with empty body
+#     Given request { }
+#     When method post
+#     Then status 400
