@@ -118,8 +118,18 @@ stages:
     - download: current
       artifact: itlab-reports-build
     - task: Docker@2
+      displayName: Build image for docker hub
       inputs:
         containerRegistry: 'rtuitlab connection by admin'
+        repository: 'rtuitlab/itlab-reports-back'
+        command: 'buildAndPush'
+        Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
+        buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
+        tags: ${{variables.ImageTags}}
+    - task: Docker@2
+      displayName: Build image for private docker registry
+      inputs:
+        containerRegistry: 'private rtuitlab registry'
         repository: 'rtuitlab/itlab-reports-back'
         command: 'buildAndPush'
         Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
@@ -142,5 +152,5 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/itlab-reports-back:$(Build.BuildId) ${{variables.serviceName}} --with-registry-auth'
+                  commands: 'docker service update --image registry.rtuitlab.dev/rtuitlab/itlab-reports-back:$(Build.BuildId) ${{variables.serviceName}} --with-registry-auth'
                   readyTimeout: '20000'
