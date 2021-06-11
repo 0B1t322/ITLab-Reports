@@ -15,10 +15,7 @@ type Config struct {
 }
 
 type DBConfig struct {
-	Host           string `envconfig:"ITLAB_REPORTS_MONGO_HOST",json:"host"`
-	DBPort         string `envconfig:"ITLAB_REPORTS_MONGO_PORT",json:"dbPort"`
-	DBName         string `envconfig:"ITLAB_REPORTS_MONGO_DB_NAME",json:"dbName"`
-	CollectionName string `envconfig:"ITLAB_REPORTS_MONGO_DB_COLLECTION_NAME",json:"collectionName"`
+	URI    		   string `envconfig:"ITLAB_REPORTS_MONGO_URI",json:"uri"`
 }
 type AuthConfig struct {
 	KeyURL   string `envconfig:"ITLAB_REPORTS_AUTH_KEY_URL",json:"keyUrl"`
@@ -39,7 +36,7 @@ func GetConfig() *Config {
 			"function": "GetConfig.ReadFile",
 			"error":    err,
 		},
-		).Fatal("Can't read config.json file, shutting down...")
+		).Warning("Can't read config.json file, shutting down...")
 	}
 	err = json.Unmarshal(data, &config)
 	if err != nil {
@@ -47,7 +44,7 @@ func GetConfig() *Config {
 			"function": "GetConfig.Unmarshal",
 			"error":    err,
 		},
-		).Fatal("Can't correctly parse json from config.json, shutting down...")
+		).Warning("Can't correctly parse json from config.json, shutting down...")
 	}
 
 	data, err = ioutil.ReadFile("auth_config.json")

@@ -14,3 +14,9 @@ services:
       - ./out:/out
     depends_on:
     - test-api
+  karate:
+    build: ./Karate
+    volumes:
+      - ./karate-out:/project/target/surefire-reports
+    depends_on:
+    - test-api

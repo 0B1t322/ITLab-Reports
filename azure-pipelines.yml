@@ -1,9 +1,5 @@
 name: $(BuildID)-$(Build.SourceBranchName)
 
-trigger:
-- master
-- develop
-
 resources:
 - repo: self
 
@@ -11,6 +7,28 @@ variables:
   tag: '$(Build.BuildId)'
   CGO_ENABLED: 0
   GOOS: linux
+  ${{ if notIn(variables['Build.SourceBranchName'], 'master', 'develop') }}:
+    buildImage: false
+    deployService: false
+    deployEnvironment: 'no'
+    imageTags: 'no'
+    serviceName: 'no'
+  ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
+    buildImage: true
+    deployService: true
+    deployEnvironment: development
+    imageTags: |
+      $(Build.BuildId)
+      develop
+    serviceName: itlab-develop_reports-back
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    buildImage: true
+    deployService: true
+    deployEnvironment: production
+    imageTags: |
+      $(Build.BuildId)
+      latest
+    serviceName: itlab_reports-back
 
 stages:
 - stage: Build
@@ -27,24 +45,31 @@ stages:
         command: 'build'
         arguments: '-a -installsuffix cgo -o $(Build.ArtifactStagingDirectory)/main -v'
         workingDirectory: 'src/ITLabReports/api'
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish build artifact'
+    - task: CopyFiles@2
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)'
-        artifact: 'itlab-reports-api-build'
-        publishLocation: 'pipeline'
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish deploy artifact'
-      inputs:
-        targetPath: 'deploy'
-        artifact: 'itlab-reports-deploy'
-        publishLocation: 'pipeline'
+        SourceFolder: 'deploy'
+        Contents: 'Dockerfile'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        OverWrite: true
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: itlab-reports-build
 
 - stage: Test
+  condition: succeeded()
   displayName: Test reports service
   jobs:
   - job: Test
-    displayName: Test
+    strategy:
+      matrix:
+        testmace:
+          serviceName: testmace
+          artifactsFolder: tests/e2e/out
+          reportsPattern: 'testmace*.xml'
+        karate:
+          serviceName: karate
+          artifactsFolder: tests/e2e/karate-out
+          reportsPattern: '*.xml'
+    displayName: Test with
 
     pool:
       vmImage: 'ubuntu-latest'
@@ -52,28 +77,80 @@ stages:
     steps:
     - task: DownloadPipelineArtifact@2
       inputs:
-        artifactName: 'itlab-reports-api-build'
+        artifactName: 'itlab-reports-build'
         buildType: 'current'
-        targetPath: './tests/e2e/api/itlab-reports-api-build'
+        targetPath: './tests/e2e/api/itlab-reports-build'
     - task: CmdLine@2
-      displayName: run testmace
+      displayName: run api
       inputs:
-        script: 'docker-compose --no-ansi up testmace'
+        script: 'docker-compose --ansi never up -d test-api'
+        workingDirectory: './tests/e2e/'
+    - task: CmdLine@2
+      displayName: run $(serviceName)
+      inputs:
+        script: 'docker-compose --ansi never up $(serviceName)'
         workingDirectory: './tests/e2e/'
     - task: CmdLine@2
       displayName: show logs
       inputs:
-        script: 'docker-compose --no-ansi logs test-api'
+        script: 'docker-compose --ansi never logs test-api'
         workingDirectory: './tests/e2e/'
     - task: CopyFiles@2
       inputs:
-        SourceFolder: 'tests/e2e/out'
+        SourceFolder: $(artifactsFolder)
         Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        TargetFolder: '$(Pipeline.Workspace)/test_result'
         CleanTargetFolder: true
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: 'testmace*.xml'
-        searchFolder: '$(Build.ArtifactStagingDirectory)'
+        testResultsFiles: $(reportsPattern)
+        searchFolder: '$(Pipeline.Workspace)/test_result'
         failTaskOnFailedTests: true
+
+- stage: buildImage
+  condition: and(succeeded(), ${{variables.buildImage}})
+  displayName: Pack docker image
+  jobs:
+  - job: build
+    displayName: Build
+    steps:
+    - download: current
+      artifact: itlab-reports-build
+    - task: Docker@2
+      displayName: Build image for docker hub
+      inputs:
+        containerRegistry: 'rtuitlab connection by admin'
+        repository: 'rtuitlab/itlab-reports-back'
+        command: 'buildAndPush'
+        Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
+        buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
+        tags: ${{variables.ImageTags}}
+    - task: Docker@2
+      displayName: Build image for private docker registry
+      inputs:
+        containerRegistry: 'private rtuitlab registry'
+        repository: 'rtuitlab/itlab-reports-back'
+        command: 'buildAndPush'
+        Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
+        buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
+        tags: ${{variables.ImageTags}}
+- stage: deploy
+  displayName: Deploy
+  condition: and(succeeded(), ${{variables.deployService}})
+  jobs:
+    - deployment: Deploy
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: none
+              - task: SSH@0
+                inputs:
+                  sshEndpoint: 'swarm manager'
+                  runOptions: 'commands'
+                  commands: 'docker service update --image registry.rtuitlab.dev/rtuitlab/itlab-reports-back:$(Build.BuildId) ${{variables.serviceName}} --with-registry-auth'
+                  readyTimeout: '20000'
