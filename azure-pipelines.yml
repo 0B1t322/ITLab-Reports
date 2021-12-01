@@ -1,7 +1,7 @@
 name: $(BuildID)-$(Build.SourceBranchName)
 
 resources:
-- repo: self
+  - repo: self
 
 variables:
   tag: '$(Build.BuildId)'
@@ -108,13 +108,14 @@ stages:
         searchFolder: '$(Pipeline.Workspace)/test_result'
         failTaskOnFailedTests: true
 
-- stage: buildImage
+- stage: packDockerImages
   condition: and(succeeded(), ${{variables.buildImage}})
-  displayName: Pack docker image
+  displayName: Pack docker images
   jobs:
-  - job: build
-    displayName: Build
+  - job: buildPublicImage
+    displayName: Build public docker image
     steps:
+    - checkout: none
     - download: current
       artifact: itlab-reports-build
     - task: Docker@2
@@ -126,6 +127,12 @@ stages:
         Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
         buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
         tags: ${{variables.ImageTags}}
+  - job: buildPrivateImage
+    displayName: Build private docker image
+    steps:
+    - checkout: none
+    - download: current
+      artifact: itlab-reports-build
     - task: Docker@2
       displayName: Build image for private docker registry
       inputs:
