@@ -8,3 +8,5 @@ tests/e2e/api/itlab-reports-build/
 
 .DS_Store
 
+# Certs for local running
+certs/

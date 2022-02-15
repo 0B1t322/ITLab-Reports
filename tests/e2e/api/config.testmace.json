@@ -1,9 +1,0 @@
-{
-    "DbOptions": {
-        "uri": "mongodb://test-db:27017/ITLabReports"
-    },
-    "AppOptions": {
-        "appPort": "8080",
-        "testMode": true
-    }
-}

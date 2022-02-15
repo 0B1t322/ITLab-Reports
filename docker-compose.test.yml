@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  test-api:
+    build:
+      context: .
+      dockerfile: Dockerfile-itlab-test
+    depends_on:
+      - test-db
+    environment:
+      - ITLAB_REPORTS_AUTH_KEY_URL=https://examplesite/files/jwks.json
+      - ITLAB_REPORTS_AUTH_AUDIENCE=example_audience
+      - ITLAB_REPORTS_AUTH_ISSUER=https://exampleissuersite.com
+      - ITLAB_REPORTS_AUTH_SCOPE=itlab.reports
+      - ITLAB_REPORTS_MONGO_URI=mongodb://test-db:27017/ITLabReports
+      - ITLAB_REPORTS_APP_PORT=8080
+      - ITLAB_REPORTS_APP_TEST_MODE=true
+  test-db:
+    image: mongo:latest
+
+  testmace:
+    build: ./tests/e2e/TestMace
+    volumes:
+      - ./out:/out
+    depends_on:
+    - test-api
+  karate:
+    build: ./tests/e2e/Karate
+    volumes:
+      - ./karate-out:/project/target/surefire-reports
+    depends_on:
+    - test-api

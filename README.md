@@ -71,3 +71,6 @@ cd tests\e2e\Karate
 mvn clean install '-Dmaven.test.skip=true'
 mvn test '-Dtest=TestParallel.java'
 ```
+
+## Run in [ITLab](https://github.com/RTUITLab/ITLab) local stack
+Read [ITLab README.md](https://github.com/RTUITLab/ITLab/blob/master/README.md) to generate self-signed certificate
