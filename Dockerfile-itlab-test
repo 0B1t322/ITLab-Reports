@@ -9,12 +9,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 FROM alpine:latest
 
-# See README to generate certificate
-COPY certs/localhost.crt /usr/share/ca-certificates/localhost.crt
-RUN apk update && apk add ca-certificates
-RUN echo localhost.crt >> /etc/ca-certificates.conf
-RUN update-ca-certificates
+RUN apk --no-cache add ca-certificates
 
-WORKDIR /app
+WORKDIR /root
 COPY --from=builder /go/src/ITLab-Reports/main .
 CMD ["./main"]

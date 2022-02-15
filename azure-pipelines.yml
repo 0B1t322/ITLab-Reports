@@ -31,31 +31,7 @@ variables:
     serviceName: itlab_reports-back
 
 stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: Go@0
-      displayName: build
-      inputs:
-        command: 'build'
-        arguments: '-a -installsuffix cgo -o $(Build.ArtifactStagingDirectory)/main -v'
-        workingDirectory: 'src/ITLabReports/api'
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: 'deploy'
-        Contents: 'Dockerfile'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-        OverWrite: true
-    - publish: $(Build.ArtifactStagingDirectory)
-      artifact: itlab-reports-build
-
 - stage: Test
-  condition: succeeded()
   displayName: Test reports service
   jobs:
   - job: Test
@@ -63,38 +39,31 @@ stages:
       matrix:
         testmace:
           serviceName: testmace
-          artifactsFolder: tests/e2e/out
+          artifactsFolder: tests/e2e/out-testmace
           reportsPattern: 'testmace*.xml'
         karate:
           serviceName: karate
-          artifactsFolder: tests/e2e/karate-out
+          artifactsFolder: tests/e2e/out-karate
           reportsPattern: '*.xml'
     displayName: Test with
-
     pool:
       vmImage: 'ubuntu-latest'
-
     steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        artifactName: 'itlab-reports-build'
-        buildType: 'current'
-        targetPath: './tests/e2e/api/itlab-reports-build'
     - task: CmdLine@2
       displayName: run api
       inputs:
-        script: 'docker-compose --ansi never up -d test-api'
-        workingDirectory: './tests/e2e/'
+        script: 'docker-compose -f docker-compose.test.yml --ansi never up -d test-api'
+        workingDirectory: '.'
     - task: CmdLine@2
       displayName: run $(serviceName)
       inputs:
-        script: 'docker-compose --ansi never up $(serviceName)'
-        workingDirectory: './tests/e2e/'
+        script: 'docker-compose -f docker-compose.test.yml --ansi never up $(serviceName)'
+        workingDirectory: '.'
     - task: CmdLine@2
       displayName: show logs
       inputs:
-        script: 'docker-compose --ansi never logs test-api'
-        workingDirectory: './tests/e2e/'
+        script: 'docker-compose -f docker-compose.test.yml --ansi never logs test-api'
+        workingDirectory: '.'
     - task: CopyFiles@2
       inputs:
         SourceFolder: $(artifactsFolder)
@@ -117,17 +86,14 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - checkout: none
-    - download: current
-      artifact: itlab-reports-build
     - task: Docker@2
       displayName: Build image for docker hub
       inputs:
         containerRegistry: 'rtuitlab connection by admin'
         repository: 'rtuitlab/itlab-reports-back'
         command: 'buildAndPush'
-        Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
-        buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
+        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        buildContext: '$(Build.SourcesDirectory)'
         tags: ${{variables.ImageTags}}
   - job: buildPrivateImage
     displayName: Build private docker image
@@ -143,8 +109,8 @@ stages:
         containerRegistry: 'private rtuitlab registry'
         repository: 'rtuitlab/itlab-reports-back'
         command: 'buildAndPush'
-        Dockerfile: '$(Pipeline.Workspace)/itlab-reports-build/Dockerfile'
-        buildContext: '$(Pipeline.Workspace)/itlab-reports-build'
+        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        buildContext: '$(Build.SourcesDirectory)'
         tags: ${{variables.ImageTags}}
 - stage: deploy
   displayName: Deploy
