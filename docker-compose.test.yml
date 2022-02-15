@@ -23,10 +23,10 @@ services:
     volumes:
       - ./out:/out
     depends_on:
-    - test-api
+      - test-api
   karate:
     build: ./tests/e2e/Karate
     volumes:
       - ./karate-out:/project/target/surefire-reports
     depends_on:
-    - test-api
+      - test-api
