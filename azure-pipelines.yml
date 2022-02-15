@@ -39,11 +39,11 @@ stages:
       matrix:
         testmace:
           serviceName: testmace
-          artifactsFolder: tests/e2e/out
+          artifactsFolder: tests/e2e/out-testmace
           reportsPattern: 'testmace*.xml'
         karate:
           serviceName: karate
-          artifactsFolder: tests/e2e/karate-out
+          artifactsFolder: tests/e2e/out-karate
           reportsPattern: '*.xml'
     displayName: Test with
     pool:

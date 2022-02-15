@@ -21,12 +21,12 @@ services:
   testmace:
     build: ./tests/e2e/TestMace
     volumes:
-      - ./out:/out
+      - ./tests/e2e/out-testmace:/out
     depends_on:
       - test-api
   karate:
     build: ./tests/e2e/Karate
     volumes:
-      - ./karate-out:/project/target/surefire-reports
+      - ./tests/e2e/out-karate:/project/target/surefire-reports
     depends_on:
       - test-api
