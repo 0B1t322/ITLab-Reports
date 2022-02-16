@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  reports-back:
+    image: registry.rtuitlab.dev/rtuitlab/itlab-reports-back:${ITLAB_SERVICE_TAG-latest}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 250M
+    networks:
+      - net
+    environment:
+      - ITLAB_REPORTS_MONGO_URI=${ITLAB_REPORTS_MONGO_DB?Place mongo connection string for reports service ITLAB_REPORTS_MONGO_DB}
+      - ITLAB_REPORTS_AUTH_KEY_URL=${ITLAB_IDENTITY_JWKSIURL?Place identity issuer ITLAB_IDENTITY_JWKSIURL}
+      - ITLAB_REPORTS_AUTH_ISSUER=${ITLAB_IDENTITY_ISSUER?Place identity issuer ITLAB_IDENTITY_ISSUER}
+networks:
+  net:
+    driver: overlay
