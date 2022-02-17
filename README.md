@@ -6,33 +6,67 @@ Status | master | develop
 build | [![Build Status](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_apis/build/status/ITLab-Reports?branchName=master)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=master) | [![Build Status](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_apis/build/status/ITLab-Reports?branchName=develop)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=develop)
 test | [![master tests](https://img.shields.io/azure-devops/tests/RTUITLab/RTU%20IT%20Lab/86/master?label=%20&style=plastic)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=master) | [![develop tests](https://img.shields.io/azure-devops/tests/RTUITLab/RTU%20IT%20Lab/86/develop?label=%20&style=plastic)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=develop)
 ## Requirements
-- Go 1.13.8+ || Docker
+- Go 1.12+ || Docker
 ## Configuration
-File `src/api/auth_config.json` must contain next content:
-```js
+
+### from JSON
+Create file `src/api/auth_config.json`:
+```json
 {
   "AuthOptions": {
-    "keyUrl": "https://examplesite/files/jwks.json", // url to jwks.json       | env: ITLAB_REPORTS_AUTH_KEY_URL
-    "audience": "example_audience",                  // audince for JWT        | env: ITLAB_REPORTS_AUTH_AUDIENCE
-    "issuer" : "https://exampleissuersite.com",      // issuer for JWT         | env: ITLAB_REPORTS_AUTH_ISSUER
-    "scope" : "my_scope",                            // required scope for JWT | env: ITLAB_REPORTS_AUTH_SCOPE
+    "keyUrl": "https://examplesite/files/jwks.json", // url to jwks.json       
+    "audience": "example_audience",                  // audince for JWT        
+    "issuer" : "https://exampleissuersite.com",      // issuer for JWT         
+    "scope" : "my_scope",                            // required scope for JWT 
   }
 }
-```  
-File `src/api/config.json` must contain next content:
-```js
+``` 
+
+Create file `src/api/config.json`:
+```json
 {
   "DbOptions": {
-    "uri": "mongodb://user:password@localhost:27017", // url to database          | env: ITLAB_REPORTS_MONGO_URI
-    "dbName" : "ITLabReports",                        // database name            | env: ITLAB_REPORTS_MONGO_DB_NAME
-    "collectionName" : "reports",                     // databsae collection name | env: ITLAB_REPORTS_MONGO_DB_COLLECTION_NAME
+    "uri": "mongodb://user:password@localhost:27017", // url to database          
+    "dbName" : "ITLabReports",                        // database name            
+    "collectionName" : "reports",                     // databsae collection name 
   },
   "AppOptions": {
-    "appPort": "8080", // app running port                      | env: ITLAB_REPORTS_APP_PORT
-    "testMode": false  // testMode=true disables jwt validation | env: ITLAB_REPORTS_APP_TEST_MODE
+    "appPort": "8080", // app running port                      
+    "testMode": false  // testMode=true disables jwt validation
   }
 }
 ```
+
+### from enviroment
+```.env
+// url to jwks.json
+ITLAB_REPORTS_AUTH_KEY_URL=https://examplesite/files/jwks.json
+
+// audince for JWT
+ITLAB_REPORTS_AUTH_AUDIENCE=example_audience
+
+// issuer for JWT  
+ITLAB_REPORTS_AUTH_ISSUER=https://exampleissuersite.com
+
+//required scope for JWT
+ITLAB_REPORTS_AUTH_SCOPE=my_scope
+
+// url to database
+ITLAB_REPORTS_MONGO_URI=mongodb://user:password@localhost:27017
+
+// database name
+ITLAB_REPORTS_MONGO_DB_NAME=ITLabReports
+
+// databsae collection name
+ITLAB_REPORTS_MONGO_DB_COLLECTION_NAME=reports
+
+// app running port 
+ITLAB_REPORTS_APP_PORT=8080
+
+// testMode=true disables jwt validation
+ITLAB_REPORTS_APP_TEST_MODE=false
+```
+
 ## Run locally
 1. Complete [configuration](#configuration)
 ### Via Docker
@@ -45,7 +79,14 @@ File `src/api/config.json` must contain next content:
     docker run -d -p 8080:8080 rtuitlab_reports-back
     ```
 ### Via Golang
-1. TODO: steps to build ITLab-Reports via Golang
+1. Build binary file(from ```src/ITLabReports/api```)
+    ```bash
+    go build -o main
+    ```
+2. Launch file
+    ```bash
+    ./main
+    ```
 ## Run tests
 ### Via Docker
 1. Run app
