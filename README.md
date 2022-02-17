@@ -11,7 +11,7 @@ test | [![master tests](https://img.shields.io/azure-devops/tests/RTUITLab/RTU%2
 
 ### from JSON
 Create file `src/api/auth_config.json`:
-```json
+```js
 {
   "AuthOptions": {
     "keyUrl": "https://examplesite/files/jwks.json", // url to jwks.json       
@@ -23,7 +23,7 @@ Create file `src/api/auth_config.json`:
 ``` 
 
 Create file `src/api/config.json`:
-```json
+```js
 {
   "DbOptions": {
     "uri": "mongodb://user:password@localhost:27017", // url to database          
