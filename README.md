@@ -38,32 +38,32 @@ Create file `src/api/config.json`:
 ```
 
 ### from enviroment
-```.env
-// url to jwks.json
+```bash
+# url to jwks.json
 ITLAB_REPORTS_AUTH_KEY_URL=https://examplesite/files/jwks.json
 
-// audince for JWT
+# audince for JWT
 ITLAB_REPORTS_AUTH_AUDIENCE=example_audience
 
-// issuer for JWT  
+# issuer for JWT  
 ITLAB_REPORTS_AUTH_ISSUER=https://exampleissuersite.com
 
-//required scope for JWT
+# required scope for JWT
 ITLAB_REPORTS_AUTH_SCOPE=my_scope
 
-// url to database
+# url to database
 ITLAB_REPORTS_MONGO_URI=mongodb://user:password@localhost:27017
 
-// database name
+# database name
 ITLAB_REPORTS_MONGO_DB_NAME=ITLabReports
 
-// databsae collection name
+# databsae collection name
 ITLAB_REPORTS_MONGO_DB_COLLECTION_NAME=reports
 
-// app running port 
+# app running port 
 ITLAB_REPORTS_APP_PORT=8080
 
-// testMode=true disables jwt validation
+# testMode=true disables jwt validation
 ITLAB_REPORTS_APP_TEST_MODE=false
 ```
 
@@ -79,11 +79,12 @@ ITLAB_REPORTS_APP_TEST_MODE=false
     docker run -d -p 8080:8080 rtuitlab_reports-back
     ```
 ### Via Golang
-1. Build binary file(from ```src/ITLabReports/api```)
+1. Build binary file
     ```bash
+    cd src/ITLabReports/api
     go build -o main
     ```
-2. Launch file
+1. Launch file
     ```bash
     ./main
     ```
@@ -105,9 +106,15 @@ ITLAB_REPORTS_APP_TEST_MODE=false
 1. Result are stored in `tests/e2e/out-karate` and `tests/e2e/out-testmace` folders
 ### Manually
 1. Run app
-    ```bash
-    # TODO: script to run ITLab-Reports via Golang
-    ```
+    1. Build binary file
+        ```bash
+        cd src/ITLabReports/api
+        go build -o main
+        ```
+    1. Launch file
+        ```bash
+        ./main
+        ```
 1. Run tests with Karate
     1. Install JDK 1.8 (ensure JAVA_HOME env variable exist)
     1. Install Maven
