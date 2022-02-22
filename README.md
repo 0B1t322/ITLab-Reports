@@ -120,12 +120,20 @@ ITLAB_REPORTS_APP_TEST_MODE=false
     1. Install Maven
     1. Run tests
         ```bash
-        cd tests\e2e\Karate
+        cd tests/e2e/Karate
         mvn clean install '-Dmaven.test.skip=true'
         mvn test '-Dtest=TestParallel.java'
         ```
 1. Run tests with Testmace
-    1. TODO: steps to run Testmace
+    1. Install testmace dependency
+        ```bash
+        npm install --global @testmace/cli@1.3.1
+        ```
+    1. Run tests
+        ```bash
+        cd tests/e2e/TestMace
+        ./waitWebApp.sh && testmace-cli /project --reporter=junit -e testmace -o tests-out
+        ```
 ## Get Docker stack config
 1. Generate docker stack
     ```bash
