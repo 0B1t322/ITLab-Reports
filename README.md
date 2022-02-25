@@ -132,7 +132,7 @@ ITLAB_REPORTS_APP_TEST_MODE=false
     1. Run tests
         ```bash
         cd tests/e2e/TestMace
-        ./waitWebApp.sh && testmace-cli /project --reporter=junit -e testmace -o tests-out
+        testmace-cli ./Project --reporter=junit -e localEnv -o tests-out
         ```
 ## Get Docker stack config
 1. Generate docker stack
