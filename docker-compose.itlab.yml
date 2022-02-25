@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  reports-back:
+    build:
+      context: ${BACK_CONTEXT:-.}/ITLab-Reports
+      dockerfile: Dockerfile-itlab
+    depends_on:
+      - mongodb
+    restart: on-failure
+    ports:
+      - 5506:5506
+    environment:
+      - ITLAB_REPORTS_MONGO_URI=mongodb://mongodb:27017/itlab-reports-dev-db
+      - ITLAB_REPORTS_AUTH_KEY_URL=https://127.0.0.1.nip.io:5501/.well-known/openid-configuration/jwks
+      - ITLAB_REPORTS_AUTH_ISSUER=https://127.0.0.1.nip.io:5501

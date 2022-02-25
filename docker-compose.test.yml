@@ -4,7 +4,7 @@ services:
   test-api:
     build:
       context: .
-      dockerfile: Dockerfile-itlab-test
+      dockerfile: Dockerfile
     depends_on:
       - test-db
     environment:

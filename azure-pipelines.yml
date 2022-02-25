@@ -1,19 +1,27 @@
+trigger:
+  branches:
+    include:
+      - "*"
+  tags:
+    include:
+      - "*"
+
 name: $(BuildID)-$(Build.SourceBranchName)
+
+pool:
+  vmImage: ubuntu-latest
 
 resources:
   - repo: self
 
 variables:
-  tag: '$(Build.BuildId)'
-  CGO_ENABLED: 0
-  GOOS: linux
-  ${{ if notIn(variables['Build.SourceBranchName'], 'master', 'develop') }}:
+  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/tags/develop') }}:
     buildImage: false
     deployService: false
     deployEnvironment: 'no'
     imageTags: 'no'
     serviceName: 'no'
-  ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
     deployService: true
     deployEnvironment: development
@@ -21,7 +29,7 @@ variables:
       $(Build.BuildId)
       develop
     serviceName: itlab-develop_reports-back
-  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
     deployService: true
     deployEnvironment: production
@@ -31,103 +39,93 @@ variables:
     serviceName: itlab_reports-back
 
 stages:
-- stage: Test
-  displayName: Test reports service
-  jobs:
-  - job: Test
-    strategy:
-      matrix:
-        testmace:
-          serviceName: testmace
-          artifactsFolder: tests/e2e/out-testmace
-          reportsPattern: 'testmace*.xml'
-        karate:
-          serviceName: karate
-          artifactsFolder: tests/e2e/out-karate
-          reportsPattern: '*.xml'
-    displayName: Test with
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: CmdLine@2
-      displayName: run api
-      inputs:
-        script: 'docker-compose -f docker-compose.test.yml --ansi never up -d test-api'
-        workingDirectory: '.'
-    - task: CmdLine@2
-      displayName: run $(serviceName)
-      inputs:
-        script: 'docker-compose -f docker-compose.test.yml --ansi never up $(serviceName)'
-        workingDirectory: '.'
-    - task: CmdLine@2
-      displayName: show logs
-      inputs:
-        script: 'docker-compose -f docker-compose.test.yml --ansi never logs test-api'
-        workingDirectory: '.'
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: $(artifactsFolder)
-        Contents: '**'
-        TargetFolder: '$(Pipeline.Workspace)/test_result'
-        CleanTargetFolder: true
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: 'JUnit'
-        testResultsFiles: $(reportsPattern)
-        searchFolder: '$(Pipeline.Workspace)/test_result'
-        failTaskOnFailedTests: true
-
-- stage: packDockerImages
-  condition: and(succeeded(), ${{variables.buildImage}})
-  displayName: Pack docker images
-  jobs:
-  - job: buildPublicImage
-    displayName: Build public docker image
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: Docker@2
-      displayName: Build image for docker hub
-      inputs:
-        containerRegistry: 'rtuitlab connection by admin'
-        repository: 'rtuitlab/itlab-reports-back'
-        command: 'buildAndPush'
-        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        buildContext: '$(Build.SourcesDirectory)'
-        tags: ${{variables.ImageTags}}
-  - job: buildPrivateImage
-    displayName: Build private docker image
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - checkout: none
-    - download: current
-      artifact: itlab-reports-build
-    - task: Docker@2
-      displayName: Build image for private docker registry
-      inputs:
-        containerRegistry: 'private rtuitlab registry'
-        repository: 'rtuitlab/itlab-reports-back'
-        command: 'buildAndPush'
-        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        buildContext: '$(Build.SourcesDirectory)'
-        tags: ${{variables.ImageTags}}
-- stage: deploy
-  displayName: Deploy
-  condition: and(succeeded(), ${{variables.deployService}})
-  jobs:
-    - deployment: Deploy
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
+  - stage: Test
+    displayName: Test reports service
+    jobs:
+    - job: Test
       strategy:
-        runOnce:
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image registry.rtuitlab.dev/rtuitlab/itlab-reports-back:$(Build.BuildId) ${{variables.serviceName}} --with-registry-auth'
-                  readyTimeout: '20000'
+        matrix:
+          testmace:
+            serviceName: testmace
+            artifactsFolder: tests/e2e/out-testmace
+            reportsPattern: 'testmace*.xml'
+          karate:
+            serviceName: karate
+            artifactsFolder: tests/e2e/out-karate
+            reportsPattern: '*.xml'
+      displayName: Test with
+      steps:
+      - task: CmdLine@2
+        displayName: run api
+        inputs:
+          script: 'docker-compose -f docker-compose.test.yml --ansi never up -d test-api'
+          workingDirectory: '.'
+      - task: CmdLine@2
+        displayName: run $(serviceName)
+        inputs:
+          script: 'docker-compose -f docker-compose.test.yml --ansi never up $(serviceName)'
+          workingDirectory: '.'
+      - task: CmdLine@2
+        displayName: show logs
+        inputs:
+          script: 'docker-compose -f docker-compose.test.yml --ansi never logs test-api'
+          workingDirectory: '.'
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: $(artifactsFolder)
+          Contents: '**'
+          TargetFolder: '$(Pipeline.Workspace)/test_result'
+          CleanTargetFolder: true
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: $(reportsPattern)
+          searchFolder: '$(Pipeline.Workspace)/test_result'
+          failTaskOnFailedTests: true
+
+  - stage: packDockerImages
+    condition: and(succeeded(), ${{ variables.buildImage }})
+    displayName: Pack docker images
+    jobs:
+    - job: buildPublicImage
+      displayName: Build public docker image
+      steps:
+      - task: Docker@2
+        displayName: Build image for docker hub
+        inputs:
+          containerRegistry: 'rtuitlab connection by admin'
+          repository: 'rtuitlab/itlab-reports-back'
+          command: 'buildAndPush'
+          Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+          buildContext: '$(Build.SourcesDirectory)'
+          tags: ${{ variables.ImageTags }}
+    - job: buildPrivateImage
+      displayName: Build private docker image
+      steps:
+      - task: Docker@2
+        displayName: Build image for private docker registry
+        inputs:
+          containerRegistry: 'private rtuitlab registry'
+          repository: 'rtuitlab/itlab-reports-back'
+          command: 'buildAndPush'
+          Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+          buildContext: '$(Build.SourcesDirectory)'
+          tags: ${{ variables.ImageTags }}
+  - stage: deploy
+    displayName: Deploy Service
+    condition: and(succeeded(), ${{ variables.deployService }})
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy Service
+        environment: ${{ variables.deployEnvironment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service update --image registry.rtuitlab.dev/rtuitlab/itlab-reports-back:$(Build.BuildId) ${{ variables.serviceName }} --with-registry-auth'
+                    readyTimeout: '20000'
