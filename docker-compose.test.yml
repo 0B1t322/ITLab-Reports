@@ -15,8 +15,6 @@ services:
       - ITLAB_REPORTS_MONGO_URI=mongodb://test-db:27017/ITLabReports
       - ITLAB_REPORTS_APP_PORT=8080
       - ITLAB_REPORTS_APP_TEST_MODE=true
-    ports:
-      - 8080:8080
   test-db:
     image: mongo:latest
 
