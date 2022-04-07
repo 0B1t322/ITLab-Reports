@@ -15,18 +15,20 @@ services:
       - ITLAB_REPORTS_MONGO_URI=mongodb://test-db:27017/ITLabReports
       - ITLAB_REPORTS_APP_PORT=8080
       - ITLAB_REPORTS_APP_TEST_MODE=true
+    ports:
+      - 8080:8080
   test-db:
     image: mongo:latest
 
-  testmace:
-    build: ./tests/e2e/TestMace
-    volumes:
-      - ./tests/e2e/out-testmace:/out
-    depends_on:
-      - test-api
-  karate:
-    build: ./tests/e2e/Karate
-    volumes:
-      - ./tests/e2e/out-karate:/project/target/surefire-reports
-    depends_on:
-      - test-api
+  # testmace:
+  #   build: ./tests/e2e/TestMace
+  #   volumes:
+  #     - ./tests/e2e/out-testmace:/out
+  #   depends_on:
+  #     - test-api
+  # karate:
+  #   build: ./tests/e2e/Karate
+  #   volumes:
+  #     - ./tests/e2e/out-karate:/project/target/surefire-reports
+  #   depends_on:
+  #     - test-api

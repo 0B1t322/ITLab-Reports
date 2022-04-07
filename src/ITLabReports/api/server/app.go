@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"time"
 	swag "github.com/swaggo/http-swagger"
+	_ "ITLabReports/docs"
 )
 
 type App struct {
@@ -82,12 +83,6 @@ func (a *App) Init(config *config.Config) {
 }
 
 func (a *App) setRouters() {
-	if cfg.App.TestMode {
-		a.Router.Use(testAuthMiddleware)
-	} else {
-		a.Router.Use(authMiddleware)
-	}
-
 	private := a.Router.PathPrefix("").Subrouter()
 	docs := a.Router.PathPrefix("/api/reports/swagger")
 	docs.Handler(
@@ -105,6 +100,11 @@ func (a *App) setRouters() {
 	private.HandleFunc("/api/reports/{id}", updateReport).Methods("PUT")
 	private.HandleFunc("/api/reports/{id}", deleteReport).Methods("DELETE")
 
+	if cfg.App.TestMode {
+		private.Use(testAuthMiddleware)
+	} else {
+		private.Use(authMiddleware)
+	}
 }
 
 func (a *App) Run(addr string) {
