@@ -88,21 +88,23 @@ func (a *App) setRouters() {
 		a.Router.Use(authMiddleware)
 	}
 
-	a.Router.HandleFunc("/api/reports", getAllReportsSorted).Methods("GET").Queries("sorted_by","{var}")
-	a.Router.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET").Queries("dateBegin","{dateBegin}", "dateEnd", "{dateEnd}")
-	a.Router.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET")
-	a.Router.HandleFunc("/api/reports", getAllReports).Methods("GET")
-	a.Router.HandleFunc("/api/reports/archived", getArchivedReports).Methods("GET")
-	a.Router.HandleFunc("/api/reports/{id}", getReport).Methods("GET")
-	a.Router.HandleFunc("/api/reports", createReport).Methods("POST").Queries("implementer","{implementer}")
-	a.Router.HandleFunc("/api/reports", createReport).Methods("POST")
-	a.Router.HandleFunc("/api/reports/{id}", updateReport).Methods("PUT")
-	a.Router.HandleFunc("/api/reports/{id}", deleteReport).Methods("DELETE")
-
+	private := a.Router.PathPrefix("").Subrouter()
 	docs := a.Router.PathPrefix("/api/reports/swagger")
 	docs.Handler(
 		swag.WrapHandler,
 	)
+
+	private.HandleFunc("/api/reports", getAllReportsSorted).Methods("GET").Queries("sorted_by","{var}")
+	private.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET").Queries("dateBegin","{dateBegin}", "dateEnd", "{dateEnd}")
+	private.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET")
+	private.HandleFunc("/api/reports", getAllReports).Methods("GET")
+	private.HandleFunc("/api/reports/archived", getArchivedReports).Methods("GET")
+	private.HandleFunc("/api/reports/{id}", getReport).Methods("GET")
+	private.HandleFunc("/api/reports", createReport).Methods("POST").Queries("implementer","{implementer}")
+	private.HandleFunc("/api/reports", createReport).Methods("POST")
+	private.HandleFunc("/api/reports/{id}", updateReport).Methods("PUT")
+	private.HandleFunc("/api/reports/{id}", deleteReport).Methods("DELETE")
+
 }
 
 func (a *App) Run(addr string) {
