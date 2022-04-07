@@ -4,7 +4,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Report struct {
 	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	ReportSender string				`json:"reportsender,omitempty"`
+	ReportSender string				`json:"reportsender,omitempty" swaggerignore:"true"`
 	Assignees	 Assignees          `json:"assignees"`
 	Date         string             `json:"date"`
 	Text         string             `json:"text"`

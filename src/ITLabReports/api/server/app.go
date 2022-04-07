@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"time"
+	swag "github.com/swaggo/http-swagger"
 )
 
 type App struct {
@@ -97,6 +98,11 @@ func (a *App) setRouters() {
 	a.Router.HandleFunc("/api/reports", createReport).Methods("POST")
 	a.Router.HandleFunc("/api/reports/{id}", updateReport).Methods("PUT")
 	a.Router.HandleFunc("/api/reports/{id}", deleteReport).Methods("DELETE")
+
+	docs := a.Router.PathPrefix("/api/reports/swagger")
+	docs.Handler(
+		swag.WrapHandler,
+	)
 }
 
 func (a *App) Run(addr string) {
