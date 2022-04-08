@@ -147,3 +147,5 @@ You can get Postman requests collection [here](https://www.getpostman.com/collec
 To make a backup of a DB, open root folder where MongoDB is installed, open a command promt and type the command mongodump  
 To restore the backup, open root folder where MongoDB is installed, open a command promt and type the command mongorestore  
 (All DB paths are default)
+## Documantation
+docs available on /api/reports/swagger/

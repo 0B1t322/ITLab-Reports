@@ -12,6 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"time"
+	swag "github.com/swaggo/http-swagger"
+	_ "ITLabReports/docs"
 )
 
 type App struct {
@@ -81,22 +83,28 @@ func (a *App) Init(config *config.Config) {
 }
 
 func (a *App) setRouters() {
-	if cfg.App.TestMode {
-		a.Router.Use(testAuthMiddleware)
-	} else {
-		a.Router.Use(authMiddleware)
-	}
+	private := a.Router.PathPrefix("").Subrouter()
+	docs := a.Router.PathPrefix("/api/reports/swagger")
+	docs.Handler(
+		swag.WrapHandler,
+	)
 
-	a.Router.HandleFunc("/api/reports", getAllReportsSorted).Methods("GET").Queries("sorted_by","{var}")
-	a.Router.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET").Queries("dateBegin","{dateBegin}", "dateEnd", "{dateEnd}")
-	a.Router.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET")
-	a.Router.HandleFunc("/api/reports", getAllReports).Methods("GET")
-	a.Router.HandleFunc("/api/reports/archived", getArchivedReports).Methods("GET")
-	a.Router.HandleFunc("/api/reports/{id}", getReport).Methods("GET")
-	a.Router.HandleFunc("/api/reports", createReport).Methods("POST").Queries("implementer","{implementer}")
-	a.Router.HandleFunc("/api/reports", createReport).Methods("POST")
-	a.Router.HandleFunc("/api/reports/{id}", updateReport).Methods("PUT")
-	a.Router.HandleFunc("/api/reports/{id}", deleteReport).Methods("DELETE")
+	private.HandleFunc("/api/reports", getAllReportsSorted).Methods("GET").Queries("sorted_by","{var}")
+	private.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET").Queries("dateBegin","{dateBegin}", "dateEnd", "{dateEnd}")
+	private.HandleFunc("/api/reports/employee/{employee}", getEmployeeReports).Methods("GET")
+	private.HandleFunc("/api/reports", getAllReports).Methods("GET")
+	private.HandleFunc("/api/reports/archived", getArchivedReports).Methods("GET")
+	private.HandleFunc("/api/reports/{id}", getReport).Methods("GET")
+	private.HandleFunc("/api/reports", createReport).Methods("POST").Queries("implementer","{implementer}")
+	private.HandleFunc("/api/reports", createReport).Methods("POST")
+	private.HandleFunc("/api/reports/{id}", updateReport).Methods("PUT")
+	private.HandleFunc("/api/reports/{id}", deleteReport).Methods("DELETE")
+
+	if cfg.App.TestMode {
+		private.Use(testAuthMiddleware)
+	} else {
+		private.Use(authMiddleware)
+	}
 }
 
 func (a *App) Run(addr string) {
