@@ -13,3 +13,5 @@ tests/e2e/api/itlab-reports-build/
 
 # Certs for local running
 certs/
+
+**/.env

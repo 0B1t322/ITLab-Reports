@@ -3,20 +3,27 @@ version: "3.8"
 services:
   test-api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: "${BACK_PROJECTS_CONTEXT-.}/src/ITLabReports"
     depends_on:
       - test-db
     environment:
       - ITLAB_REPORTS_AUTH_KEY_URL=https://examplesite/files/jwks.json
-      - ITLAB_REPORTS_AUTH_AUDIENCE=example_audience
+      - ITLAB_REPORTS_AUTH_AUDIENCE=audience
       - ITLAB_REPORTS_AUTH_ISSUER=https://exampleissuersite.com
       - ITLAB_REPORTS_AUTH_SCOPE=itlab.reports
       - ITLAB_REPORTS_MONGO_URI=mongodb://test-db:27017/ITLabReports
       - ITLAB_REPORTS_APP_PORT=8080
       - ITLAB_REPORTS_APP_TEST_MODE=true
+    ports:
+      - 8080:8080
   test-db:
     image: mongo:latest
+    ports:
+      - 27018:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: itlab-reports
 
   testmace:
     build: ./tests/e2e/TestMace
