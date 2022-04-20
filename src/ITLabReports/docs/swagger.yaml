@@ -1,0 +1,155 @@
+basePath: /api
+definitions:
+  dto.CreateReportReq:
+    properties:
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  dto.CreateReportResp:
+    properties:
+      assignees:
+        $ref: '#/definitions/dto.GetAssigneesResp'
+      date:
+        type: string
+      id:
+        type: string
+      text:
+        type: string
+    type: object
+  dto.GetAssigneesResp:
+    properties:
+      implementer:
+        type: string
+      reporter:
+        type: string
+    type: object
+  dto.GetReportResp:
+    properties:
+      assignees:
+        $ref: '#/definitions/dto.GetAssigneesResp'
+      date:
+        type: string
+      id:
+        type: string
+      text:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is a server to work with reports
+  title: ITLab-Reports API
+  version: "1.0"
+paths:
+  /reports:
+    get:
+      parameters:
+      - description: sort by this field
+        enum:
+        - name
+        - date
+        in: query
+        name: sorted_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.GetReportResp'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: get report list
+      tags:
+      - reports
+    post:
+      description: |-
+        create report
+        query value implementor indicate who make things described in report
+        name is optional field, if use it text should be in standart md format
+        if name is not given text should be in format "report_name@\n\t\n@report_rext"
+        if implementor is not specified report-maker is implementor
+      parameters:
+      - description: implemntor user id
+        in: query
+        name: implementor
+        type: string
+      - description: body
+        in: body
+        name: report
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateReportReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateReportResp'
+      security:
+      - ApiKeyAuth: []
+      summary: create report
+      tags:
+      - reports
+  /reports/{id}:
+    get:
+      parameters:
+      - description: id of report
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetReportResp'
+      security:
+      - ApiKeyAuth: []
+      summary: return report
+      tags:
+      - reports
+  /reports/employee/{employee}:
+    get:
+      description: get reports for current employee
+      parameters:
+      - description: begin date of reports
+        in: query
+        name: dateBegin
+        type: string
+      - description: end date of reports
+        in: query
+        name: dateEnd
+        type: string
+      - description: employee user id
+        in: path
+        name: employee
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.GetReportResp'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: get reports for employee
+      tags:
+      - reports
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

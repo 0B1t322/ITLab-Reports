@@ -1,0 +1,238 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a server to work with reports",
+        "title": "ITLab-Reports API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {
+        "/reports": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "get report list",
+                "parameters": [
+                    {
+                        "enum": [
+                            "name",
+                            "date"
+                        ],
+                        "type": "string",
+                        "description": "sort by this field",
+                        "name": "sorted_by",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.GetReportResp"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "create report\nquery value implementor indicate who make things described in report\nname is optional field, if use it text should be in standart md format\nif name is not given text should be in format \"report_name@\\n\\t\\n@report_rext\"\nif implementor is not specified report-maker is implementor",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "create report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "implemntor user id",
+                        "name": "implementor",
+                        "in": "query"
+                    },
+                    {
+                        "description": "body",
+                        "name": "report",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateReportReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateReportResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/employee/{employee}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get reports for current employee",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "get reports for employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "begin date of reports",
+                        "name": "dateBegin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "end date of reports",
+                        "name": "dateEnd",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "employee user id",
+                        "name": "employee",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.GetReportResp"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "return report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of report",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetReportResp"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.CreateReportReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateReportResp": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/dto.GetAssigneesResp"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetAssigneesResp": {
+            "type": "object",
+            "properties": {
+                "implementer": {
+                    "type": "string"
+                },
+                "reporter": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetReportResp": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/dto.GetAssigneesResp"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
