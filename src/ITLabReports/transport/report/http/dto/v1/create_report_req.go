@@ -62,7 +62,7 @@ func (c *CreateReportReq) ToEndpointReq() *reqresp.CreateReportReq {
 	rep := &report.Report{
 		Report: &entreport.Report{
 			Name: c.GetName(),
-			Date: time.Now().UTC(),
+			Date: time.Now().UTC().Round(time.Millisecond),
 			Text: c.GetText(),
 		},
 		Assignees: &entassignees.Assignees{

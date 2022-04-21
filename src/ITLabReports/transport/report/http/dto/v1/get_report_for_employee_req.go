@@ -11,13 +11,13 @@ import (
 )
 
 type GetReportsForEmployeeReq struct {
-	dateBegin string
-	dateEnd   string
-	employee  string
+	DateBegin string
+	DateEnd   string
+	Employee  string
 }
 
 func (g *GetReportsForEmployeeReq) GetEmployee() string {
-	return g.employee
+	return g.Employee
 }
 
 func (g *GetReportsForEmployeeReq) ToEndpointReq() *reqresp.GetReportsReq {
@@ -29,7 +29,7 @@ func (g *GetReportsForEmployeeReq) ToEndpointReq() *reqresp.GetReportsReq {
 						{
 							GetReportsFilterFields: report.GetReportsFilterFields{
 								Implementer: &filter.FilterField[string]{
-									Value:     g.employee,
+									Value:     g.Employee,
 									Operation: filter.EQ,
 								},
 							},
@@ -37,7 +37,7 @@ func (g *GetReportsForEmployeeReq) ToEndpointReq() *reqresp.GetReportsReq {
 						{
 							GetReportsFilterFields: report.GetReportsFilterFields{
 								Reporter: &filter.FilterField[string]{
-									Value:     g.employee,
+									Value:     g.Employee,
 									Operation: filter.EQ,
 								},
 							},
@@ -50,7 +50,7 @@ func (g *GetReportsForEmployeeReq) ToEndpointReq() *reqresp.GetReportsReq {
 
 	var dateAnd []*report.GetReportsFilterFieldsWithOrAnd
 	{
-		if dateBegin := g.dateBegin; dateBegin != "" {
+		if dateBegin := g.DateBegin; dateBegin != "" {
 			dateAnd = append(
 				dateAnd,
 				&report.GetReportsFilterFieldsWithOrAnd{
@@ -64,7 +64,7 @@ func (g *GetReportsForEmployeeReq) ToEndpointReq() *reqresp.GetReportsReq {
 			)
 		}
 
-		if dateEnd := g.dateEnd; dateEnd != "" {
+		if dateEnd := g.DateEnd; dateEnd != "" {
 			dateAnd = append(
 				dateAnd,
 				&report.GetReportsFilterFieldsWithOrAnd{
@@ -93,9 +93,9 @@ func DecodeGetReportsForEmployeeReq(
 	values := r.URL.Query()
 
 	req := &GetReportsForEmployeeReq{
-		dateBegin: values.Get("dateBegin"),
-		dateEnd:   values.Get("dateEnd"),
-		employee:  vars["employee"],
+		DateBegin: values.Get("dateBegin"),
+		DateEnd:   values.Get("dateEnd"),
+		Employee:  vars["employee"],
 	}
 
 	return req, nil

@@ -11,16 +11,16 @@ import (
 )
 
 type GetReportsReq struct {
-	sortedBy string
+	SortedBy string
 
-	implementer string
+	Implementer string
 
-	reporter string
+	Reporter string
 }
 
 func (g *GetReportsReq) SetImplementerAndReporter(implementer, reporter string) {
-	g.implementer = implementer
-	g.reporter = reporter
+	g.Implementer = implementer
+	g.Reporter = reporter
 }
 
 func (g *GetReportsReq) ToEndpointReq() *reqresp.GetReportsReq {
@@ -33,15 +33,15 @@ func (g *GetReportsReq) ToEndpointReq() *reqresp.GetReportsReq {
 		},
 	}
 
-	switch g.sortedBy {
+	switch g.SortedBy {
 	case "name":
 		req.Params.Filter.NameSort = *optional.NewOptional[ordertype.OrderType](ordertype.ASC)
 	case "date":
 		req.Params.Filter.DateSort = *optional.NewOptional[ordertype.OrderType](ordertype.ASC)
 	}
 
-	if g.implementer != "" && g.reporter != "" {
-		req.SetImplementerAndReporter(g.implementer, g.reporter)
+	if g.Implementer != "" && g.Reporter != "" {
+		req.SetImplementerAndReporter(g.Implementer, g.Reporter)
 	}
 
 
@@ -59,7 +59,7 @@ func DecodeGetReportsReq(
 	)
 
 	req := &GetReportsReq{
-		sortedBy: sortedBy,
+		SortedBy: sortedBy,
 	}
 
 	return req, nil
