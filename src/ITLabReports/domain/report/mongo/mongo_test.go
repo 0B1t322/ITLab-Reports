@@ -695,8 +695,8 @@ func TestFunc_MongoRepository(t *testing.T) {
 					)
 					require.NoError(t, err)
 
-					for _, getReport := range getReports {
-						require.Contains(t, createdReports, getReport)
+					for _, createdReport := range createdReports {
+						require.Contains(t, getReports, createdReport)
 					}
 				},
 			)
