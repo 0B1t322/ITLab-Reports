@@ -10,8 +10,13 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v1"
 	. "github.com/RTUITLab/ITLab-Reports/transport/report/http/handlers/v1"
 	"github.com/gorilla/mux"
+	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
+	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 )
 
+var (
+	EmployeeCantBeEmpty = errors.New("Employee can't be empty")
+)
 
 type serverOptions struct{
 	auther middlewares.Auther
@@ -23,6 +28,16 @@ func WithAuther(a middlewares.Auther) ServerOptions {
 	return func(s *serverOptions) {
 		s.auther = a
 	}
+}
+
+func MergeServerOptions(opts ...ServerOptions) *serverOptions {
+	s := &serverOptions{}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s
 }
 
 // NewServer copy given endpoints and build middlewares for http
@@ -40,7 +55,7 @@ func NewServer(
 		opt(s)
 	}
 
-	e = buildMiddlewares(e, s)
+	e = BuildMiddlewares(e, s)
 
 	r.Handle(
 		"/reports",
@@ -63,7 +78,7 @@ func NewServer(
 	).Methods(http.MethodPost)
 }
 
-func buildMiddlewares(
+func BuildMiddlewares(
 	e endpoints.Endpoints,
 	opt *serverOptions,
 ) endpoints.Endpoints {
@@ -84,6 +99,11 @@ func buildMiddlewares(
 
 	e.GetReportsForEmployee.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
+		middlewares.EmployeeIsNotEmpty[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](
+			func() error {
+				return errors.Wrap(EmployeeCantBeEmpty, serr.ValidationError)
+			},
+		),
 		middlewares.MergeMiddlewaresIntoOr(
 			middlewares.IsSuperAdmin[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
 			middlewares.IsAdmin[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
