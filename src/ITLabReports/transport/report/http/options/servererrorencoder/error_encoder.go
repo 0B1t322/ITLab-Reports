@@ -7,6 +7,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
+	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	"github.com/clarketm/json"
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +29,8 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 			err == middlewares.TokenNotValid, err == middlewares.TokenExpired:
 		statusCode = http.StatusUnauthorized
 	// BadRequest 
-	case err == reports.ErrReportIDNotValid, errors.Is(err, reports.ErrValidationError):
+	case 	err == reports.ErrReportIDNotValid, errors.Is(err, reports.ErrValidationError), 
+			errors.Is(err, serr.ValidationError):
 		statusCode = http.StatusBadRequest
 	// NotFound
 	case err == reports.ErrReportNotFound:
