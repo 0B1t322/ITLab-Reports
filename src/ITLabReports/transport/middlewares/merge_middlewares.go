@@ -21,7 +21,7 @@ func MergeMiddlewaresIntoOr[Req any, Resp any](
 			var success bool = false
 
 			for _, m := range ms {
-				_, err = m(Nop[Req,Resp])(ctx, request)
+				_, err = m(next)(ctx, request)
 				if err == nil {
 					success = true
 					break
