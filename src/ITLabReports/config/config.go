@@ -33,7 +33,7 @@ type AuthConfig struct {
 
 type Roles struct {
 	User       string `envconfig:"ITLAB_REPORTS_ROLE_USER" default:"user"`
-	Admin      string `envconfig:"ITLAB_REPORTS_ROLE_ADMIN" default:"admin"`
+	Admin      string `envconfig:"ITLAB_REPORTS_ROLE_ADMIN" default:"reports.admin"`
 	SuperAdmin string `envconfig:"ITLAB_REPORTS_ROLE_SUPER_ADMIN" default:"admin"`
 }
 
