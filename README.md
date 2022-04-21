@@ -6,36 +6,8 @@ Status | master | develop
 build | [![Build Status](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_apis/build/status/ITLab-Reports?branchName=master)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=master) | [![Build Status](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_apis/build/status/ITLab-Reports?branchName=develop)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=develop)
 test | [![master tests](https://img.shields.io/azure-devops/tests/RTUITLab/RTU%20IT%20Lab/86/master?label=%20&style=plastic)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=master) | [![develop tests](https://img.shields.io/azure-devops/tests/RTUITLab/RTU%20IT%20Lab/86/develop?label=%20&style=plastic)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=86&branchName=develop)
 ## Requirements
-- Go 1.12+ || Docker
+- Go 1.18+ || Docker
 ## Configuration
-
-### from JSON
-Create file `src/api/auth_config.json`:
-```js
-{
-  "AuthOptions": {
-    "keyUrl": "https://examplesite/files/jwks.json", // url to jwks.json       
-    "audience": "example_audience",                  // audince for JWT        
-    "issuer" : "https://exampleissuersite.com",      // issuer for JWT         
-    "scope" : "my_scope",                            // required scope for JWT 
-  }
-}
-``` 
-
-Create file `src/api/config.json`:
-```js
-{
-  "DbOptions": {
-    "uri": "mongodb://user:password@localhost:27017", // url to database          
-    "dbName" : "ITLabReports",                        // database name            
-    "collectionName" : "reports",                     // databsae collection name 
-  },
-  "AppOptions": {
-    "appPort": "8080", // app running port                      
-    "testMode": false  // testMode=true disables jwt validation
-  }
-}
-```
 
 ### from enviroment
 ```bash
@@ -43,7 +15,8 @@ Create file `src/api/config.json`:
 ITLAB_REPORTS_AUTH_KEY_URL=https://examplesite/files/jwks.json
 
 # audince for JWT
-ITLAB_REPORTS_AUTH_AUDIENCE=example_audience
+# in default itlab
+ITLAB_REPORTS_AUTH_AUDIENCE=audience
 
 # issuer for JWT  
 ITLAB_REPORTS_AUTH_ISSUER=https://exampleissuersite.com
@@ -54,17 +27,26 @@ ITLAB_REPORTS_AUTH_SCOPE=my_scope
 # url to database
 ITLAB_REPORTS_MONGO_URI=mongodb://user:password@localhost:27017
 
-# database name
-ITLAB_REPORTS_MONGO_DB_NAME=ITLabReports
-
-# databsae collection name
-ITLAB_REPORTS_MONGO_DB_COLLECTION_NAME=reports
+# url to test database for launching tests
+ITLAB_REPORTS_MONGO_URI=mongodb://user:password@localhost:27017
 
 # app running port 
 ITLAB_REPORTS_APP_PORT=8080
 
 # testMode=true disables jwt validation
 ITLAB_REPORTS_APP_TEST_MODE=false
+
+# user role
+# in deafult user
+ITLAB_REPORTS_ROLE_USER=user
+
+# admin role
+# in deafult reports.admin
+ITLAB_REPORTS_ROLE_ADMIN=admin
+
+# superadmin role
+# in deafult admin
+ITLAB_REPORTS_ROLE_SUPER_ADMIN=superadmin
 ```
 
 ## Run locally
@@ -149,3 +131,24 @@ To restore the backup, open root folder where MongoDB is installed, open a comma
 (All DB paths are default)
 ## Documantation
 docs available on /api/reports/swagger/
+
+## Work with test mode
+
+
+in testmode use test auth middleware
+to generate token for it use https://jwt.io
+use secret "test" and put into sub id of your test user
+and in audiance field that configure with env put your role from env role for example for default test env use next payload
+
+```json
+{
+  "aud": "audiance",
+  "iss": "https://example.com",
+  "iat": 1516239022,
+  "exp": 1505467756869,
+  "sub": "user_id",
+  "itlab": [
+    "user"
+  ]
+}
+```
