@@ -338,7 +338,7 @@ func (a *testAuth) buildMiddlewares() {
 			
 			var claims jwt.MapClaims
 
-			token, err := jwt.ParseWithClaims(
+			_, err = jwt.ParseWithClaims(
 				jwtToken, 
 				&claims,
 				func(t *jwt.Token) (interface{}, error) {
@@ -351,7 +351,8 @@ func (a *testAuth) buildMiddlewares() {
 			if validErr, ok := err.(*jwt.ValidationError); ok {
 				switch validErr.Errors {
 				case jwt.ValidationErrorExpired:
-					return nil, TokenExpired
+					// Pass
+					// return nil, TokenExpired
 				default:
 					level.Error(a.logger).Log("err", validErr.Error())
 				}
@@ -361,9 +362,9 @@ func (a *testAuth) buildMiddlewares() {
 			}
 
 
-			if !token.Valid {
-				return nil, TokenNotValid
-			}
+			// if !token.Valid {
+			// 	return nil, TokenNotValid
+			// }
 
 			role, err := a.roleGetter.GetRole(claims, a.RoleClaim)
 			if err != nil {
