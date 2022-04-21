@@ -90,10 +90,11 @@ func DecodeGetReportsForEmployeeReq(
 	r *http.Request,
 ) (*GetReportsForEmployeeReq, error) {
 	vars := mux.Vars(r)
+	values := r.URL.Query()
 
 	req := &GetReportsForEmployeeReq{
-		dateBegin: vars["dateBegin"],
-		dateEnd:   vars["dateEnd"],
+		dateBegin: values.Get("dateBegin"),
+		dateEnd:   values.Get("dateEnd"),
 		employee:  vars["employee"],
 	}
 

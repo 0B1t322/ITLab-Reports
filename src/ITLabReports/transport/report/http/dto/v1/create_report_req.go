@@ -11,7 +11,6 @@ import (
 	entreport "github.com/RTUITLab/ITLab-Reports/entity/report"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
 	"github.com/clarketm/json"
-	"github.com/gorilla/mux"
 )
 
 type CreateReportReq struct {
@@ -23,6 +22,14 @@ type CreateReportReq struct {
 
 func (c *CreateReportReq) SetReporter(r string) {
 	c.Reporter = r
+}
+
+func (c *CreateReportReq) SetImplementor(i string) {
+	c.Implementor = i
+}
+
+func (c *CreateReportReq) GetImplementor() string {
+	return c.Implementor
 }
 
 func (c *CreateReportReq) GetName() string {
@@ -73,16 +80,15 @@ func DecodeCreateReportReq(
 	ctx context.Context,
 	r *http.Request,
 ) (*CreateReportReq, error) {
-	vars := mux.Vars(r)
+	values := r.URL.Query()
 
 	var (
-		implementer = vars["implementor"]
+		implementer = values.Get("implementor")
 	)
 
 	req := &CreateReportReq{
 		Implementor: implementer,
 	}
-
 
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		return nil, err

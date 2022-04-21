@@ -85,6 +85,7 @@ func (a *App) StartHTTP() {
 	if err := a.BuildHTTP(); err != nil {
 		log.Panicf("Failed to start application %v", err)
 	}
+	
 	log.Infof("Starting Application is port %s", a.cfg.App.AppPort)
 	s := &http.Server{
 		Addr: fmt.Sprintf(":%s", a.cfg.App.AppPort),

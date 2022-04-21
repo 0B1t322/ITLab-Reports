@@ -8,7 +8,6 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
-	"github.com/gorilla/mux"
 )
 
 type GetReportsReq struct {
@@ -53,10 +52,10 @@ func DecodeGetReportsReq(
 	ctx context.Context,
 	r *http.Request,
 ) (*GetReportsReq, error) {
-	vars := mux.Vars(r)
+	values := r.URL.Query()
 
 	var (
-		sortedBy = vars["sorted_by"]
+		sortedBy = values.Get("sorted_by")
 	)
 
 	req := &GetReportsReq{

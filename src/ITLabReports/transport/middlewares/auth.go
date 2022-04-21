@@ -160,7 +160,6 @@ func (a *authJWKS) buildJWKS() error {
 func (a *authJWKS) buildMiddlewares() {
 	a.auth = func(next EndpointWithContext[any, any]) EndpointWithContext[any, any] {
 		return func(ctx mcontext.MiddlewareContext, req any) (any, error) {
-
 			_t, err := ctx.GetToken()
 			if err != nil {
 				return nil, TokenNotValid
@@ -316,7 +315,7 @@ func NewTestAuth(
 	}
 
 	a.logger = log.With(a.logger, "from", "AuthMiddleware")
-
+	logrus.Info("auth cfg ", a)
 	a.roleGetter = rolegetter.New(
 		a.SuperAdminRole,
 		a.AdminRole,
@@ -330,14 +329,13 @@ func NewTestAuth(
 func (a *testAuth) buildMiddlewares() {
 	a.auth = func(next EndpointWithContext[any, any]) EndpointWithContext[any, any] {
 		return func(ctx mcontext.MiddlewareContext, req any) (any, error) {
-
 			_t, err := ctx.GetToken()
 			if err != nil {
 				return nil, TokenNotValid
 			}
 
 			jwtToken := strings.ReplaceAll(_t, "Bearer ", "")
-
+			
 			var claims jwt.MapClaims
 
 			token, err := jwt.ParseWithClaims(

@@ -7,6 +7,7 @@ import (
 	genhttp "github.com/RTUITLab/ITLab-Reports/pkg/transport/http"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v1"
 	. "github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v1"
+	errenc "github.com/RTUITLab/ITLab-Reports/transport/report/http/options/servererrorencoder"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/options/serverbefore"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
@@ -35,6 +36,9 @@ func GetReport(
 		dto.EncodeGetReportResp,
 		kithttp.ServerBefore(
 			serverbefore.TokenFromReq,
+		),
+		kithttp.ServerErrorEncoder(
+			errenc.EncodeError,
 		),
 	)
 }
@@ -70,6 +74,9 @@ func GetReportsForEmployee(
 		kithttp.ServerBefore(
 			serverbefore.TokenFromReq,
 		),
+		kithttp.ServerErrorEncoder(
+			errenc.EncodeError,
+		),
 	)
 }
 
@@ -97,6 +104,9 @@ func GetReports(
 		dto.EncodeGetReportsResp,
 		kithttp.ServerBefore(
 			serverbefore.TokenFromReq,
+		),
+		kithttp.ServerErrorEncoder(
+			errenc.EncodeError,
 		),
 	)
 }
@@ -139,6 +149,9 @@ func CreateReports(
 		dto.EncodeCreateReportResp,
 		kithttp.ServerBefore(
 			serverbefore.TokenFromReq,
+		),
+		kithttp.ServerErrorEncoder(
+			errenc.EncodeError,
 		),
 	)
 }

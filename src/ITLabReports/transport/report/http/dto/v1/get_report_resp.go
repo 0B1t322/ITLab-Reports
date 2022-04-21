@@ -9,9 +9,10 @@ import (
 )
 
 type GetReportResp struct {
-	ID       string `json:"id"`
-	Text     string `json:"text"`
-	Date     string `json:"date"`
+	ID       string           `json:"id"`
+	Name     string           `json:"name"`
+	Text     string           `json:"text"`
+	Date     string           `json:"date"`
 	Assignes GetAssigneesResp `json:"assignees"`
 }
 
@@ -27,9 +28,10 @@ func GetReportRespFrom(resp *reqresp.GetReportResp) *GetReportResp {
 	r := resp.Report
 
 	return &GetReportResp{
-		ID: r.GetID(),
-		Text: r.GetText(),
-		Date: r.GetDateString(),
+		ID:       r.GetID(),
+		Name:     r.GetName(),
+		Text:     r.GetText(),
+		Date:     r.GetDateString(),
 		Assignes: GetAssignesRespFrom(resp),
 	}
 }

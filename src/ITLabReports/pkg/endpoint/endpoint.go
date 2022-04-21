@@ -68,9 +68,9 @@ func EndpointFromGoKitEndpoint[ReqType any, RespType any](e endpoint.Endpoint) E
 	return func(ctx context.Context, req ReqType) (responce RespType, err error) {
 		kitResp, err := e(ctx, req)
 		if err != nil {
-			return *new(RespType), nil
+			return *new(RespType), err
 		}
-		
+
 		responce = kitResp.(RespType)
 
 		return responce, err

@@ -16,6 +16,7 @@ type ErrorModel struct {
 }
 
 func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
+	logrus.Info("Error encoder")
 	var statusCode int
 
 	switch {

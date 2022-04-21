@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/endpoint"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v1"
@@ -69,47 +68,28 @@ func buildMiddlewares(
 	opt *serverOptions,
 ) endpoints.Endpoints {
 	e.GetReport.AddCustomMiddlewares(
-		middlewares.MiddlewareWithCTXFrom(
-			endpoint.MiddlewareFromGoKitMiddleware[*dto.GetReportReq, *dto.GetReportResp](
-				opt.auther.Auth().ToMiddleware().ToGoKitMiddleware(),
-			),
-		),
+		middlewares.Auth[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
 		middlewares.CheckUserIsReporter[*dto.GetReportReq, *dto.GetReportResp](),
 	)
 
 	e.CreateReport.AddCustomMiddlewares(
-		middlewares.MiddlewareWithCTXFrom(
-			endpoint.MiddlewareFromGoKitMiddleware[*dto.CreateReportReq, *dto.CreateReportResp](
-				opt.auther.Auth().ToMiddleware().ToGoKitMiddleware(),
-			),
-		),
+		middlewares.Auth[*dto.CreateReportReq, *dto.CreateReportResp](opt.auther),
 		middlewares.SetReporter[*dto.CreateReportReq, *dto.CreateReportResp](),
+		middlewares.SetImplementerIfEmpty[*dto.CreateReportReq, *dto.CreateReportResp](),
 	)
 
 	e.GetReportsForEmployee.AddCustomMiddlewares(
-		middlewares.MiddlewareWithCTXFrom(
-			endpoint.MiddlewareFromGoKitMiddleware[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](
-				opt.auther.Auth().ToMiddleware().ToGoKitMiddleware(),
-			),
-		),
+		middlewares.Auth[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
 		middlewares.MergeMiddlewaresIntoOr(
-			middlewares.MiddlewareWithCTXFrom(
-				endpoint.MiddlewareFromGoKitMiddleware[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](
-					opt.auther.IsAdmin().ToMiddleware().ToGoKitMiddleware(),
-				),
-			),
+			middlewares.IsAdmin[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
 			middlewares.UserIsEmployee[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](),
 		),
 	)
 
 	e.GetReports.AddCustomMiddlewares(
-		middlewares.MiddlewareWithCTXFrom(
-			endpoint.MiddlewareFromGoKitMiddleware[*dto.GetReportsReq, *dto.GetReportsResp](
-				opt.auther.Auth().ToMiddleware().ToGoKitMiddleware(),
-			),
-		),
-		middlewares.SetReporterAndImplementerIfFailed[*dto.GetReportsReq, *dto.GetReportsResp](
-			opt.auther.IsAdmin().ToMiddleware().ToGoKitMiddleware(),
+		middlewares.Auth[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+		middlewares.SetReporterAndImplementerIfFailed(
+			middlewares.IsAdmin[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
 		),
 	)
 
