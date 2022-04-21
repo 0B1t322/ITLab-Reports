@@ -69,7 +69,11 @@ func buildMiddlewares(
 ) endpoints.Endpoints {
 	e.GetReport.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
-		middlewares.CheckUserIsReporter[*dto.GetReportReq, *dto.GetReportResp](),
+		middlewares.MergeMiddlewaresIntoOr(
+			middlewares.IsSuperAdmin[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
+			middlewares.IsAdmin[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
+			middlewares.CheckUserIsReporter[*dto.GetReportReq, *dto.GetReportResp](),
+		),
 	)
 
 	e.CreateReport.AddCustomMiddlewares(
@@ -81,6 +85,7 @@ func buildMiddlewares(
 	e.GetReportsForEmployee.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
 		middlewares.MergeMiddlewaresIntoOr(
+			middlewares.IsSuperAdmin[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
 			middlewares.IsAdmin[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](opt.auther),
 			middlewares.UserIsEmployee[*dto.GetReportsForEmployeeReq, *dto.GetReportsResp](),
 		),
@@ -89,7 +94,10 @@ func buildMiddlewares(
 	e.GetReports.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
 		middlewares.SetReporterAndImplementerIfFailed(
-			middlewares.IsAdmin[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+			middlewares.MergeMiddlewaresIntoOr(
+				middlewares.IsAdmin[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+				middlewares.IsSuperAdmin[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+			),
 		),
 	)
 
