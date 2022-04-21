@@ -15,3 +15,5 @@ tests/e2e/api/itlab-reports-build/
 certs/
 
 **/.env
+
+**/Test**.*
