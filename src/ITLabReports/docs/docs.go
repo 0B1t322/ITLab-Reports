@@ -60,7 +60,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "create report\nquery value implementor indicate who make things described in report\nname is optional field, if use it text should be in standart md format\nif name is not given text should be in format \"report_name@\\n\\t\\n@report_rext\"\nif implementor is not specified report-maker is implementor",
+                "description": "create report\nquery value implementer indicate who make things described in report\nname is optional field, if use it text should be in standart md format\nif name is not given text should be in format \"report_name@\\n\\t\\n@report_rext\"\nif implementor is not specified report-maker is implementor",
                 "produces": [
                     "application/json"
                 ],
@@ -71,8 +71,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "implemntor user id",
-                        "name": "implementor",
+                        "description": "implemnter user id",
+                        "name": "implementer",
                         "in": "query"
                     },
                     {
@@ -202,6 +202,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "text": {
                     "type": "string"
                 }
@@ -228,6 +231,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "text": {

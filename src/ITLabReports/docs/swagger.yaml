@@ -15,6 +15,8 @@ definitions:
         type: string
       id:
         type: string
+      name:
+        type: string
       text:
         type: string
     type: object
@@ -32,6 +34,8 @@ definitions:
       date:
         type: string
       id:
+        type: string
+      name:
         type: string
       text:
         type: string
@@ -69,14 +73,14 @@ paths:
     post:
       description: |-
         create report
-        query value implementor indicate who make things described in report
+        query value implementer indicate who make things described in report
         name is optional field, if use it text should be in standart md format
         if name is not given text should be in format "report_name@\n\t\n@report_rext"
         if implementor is not specified report-maker is implementor
       parameters:
-      - description: implemntor user id
+      - description: implemnter user id
         in: query
-        name: implementor
+        name: implementer
         type: string
       - description: body
         in: body

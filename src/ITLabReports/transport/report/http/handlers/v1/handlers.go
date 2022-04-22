@@ -119,7 +119,7 @@ func GetReports(
 //
 // @Description create report
 //
-// @Description query value implementor indicate who make things described in report
+// @Description query value implementer indicate who make things described in report
 // 
 // @Description name is optional field, if use it text should be in standart md format
 // 
@@ -131,7 +131,7 @@ func GetReports(
 //
 // @Security ApiKeyAuth
 //
-// @Param implementor query string false "implemntor user id"
+// @Param implementer query string false "implemnter user id"
 //
 // @Param report body dto.CreateReportReq true "body"
 //

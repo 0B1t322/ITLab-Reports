@@ -83,7 +83,7 @@ func DecodeCreateReportReq(
 	values := r.URL.Query()
 
 	var (
-		implementer = values.Get("implementor")
+		implementer = values.Get("implementer")
 	)
 
 	req := &CreateReportReq{

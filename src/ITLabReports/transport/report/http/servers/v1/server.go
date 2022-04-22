@@ -4,14 +4,14 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v1"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v1"
+	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	. "github.com/RTUITLab/ITLab-Reports/transport/report/http/handlers/v1"
 	"github.com/gorilla/mux"
-	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
-	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 )
 
 var (
