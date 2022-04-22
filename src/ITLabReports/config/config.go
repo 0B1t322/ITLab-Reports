@@ -7,7 +7,7 @@ import (
 )
 
 type MongoDBConfig struct {
-	URI     string `envconfig:"ITLAB_REPORTS_MONGO_URI" json:"uri"`
+	URI     string `envconfig:"ITLAB_REPORTS_MONGO_URI"`
 	TestURI string `envconfig:"ITLAB_REPORTS_MONGO_TEST_URI"`
 }
 

@@ -44,7 +44,7 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 			},
 		).Error("")
 	}
-
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(ErrorModel{Error: err.Error()})
 }
