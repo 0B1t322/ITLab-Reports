@@ -21,5 +21,6 @@ func EncodeCreateReportResp(
 	w http.ResponseWriter,
 	resp *CreateReportResp,
 ) error {
+	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
 }
