@@ -69,8 +69,8 @@ stages:
               containerRegistry: 'rtuitlab connection by admin'
               repository: 'rtuitlab/itlab-reports-back'
               command: 'buildAndPush'
-              Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-              buildContext: '$(Build.SourcesDirectory)'
+              Dockerfile: '$(Build.SourcesDirectory)/src/ITLabReports/Dockerfile'
+              buildContext: '$(Build.SourcesDirectory)/src/ITLabReports'
               tags: ${{ variables.ImageTags }}
       - job: buildPrivateImage
         displayName: Build private docker image
@@ -81,8 +81,8 @@ stages:
               containerRegistry: 'private rtuitlab registry'
               repository: 'rtuitlab/itlab-reports-back'
               command: 'buildAndPush'
-              Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-              buildContext: '$(Build.SourcesDirectory)'
+              Dockerfile: '$(Build.SourcesDirectory)/src/ITLabReports/Dockerfile'
+              buildContext: '$(Build.SourcesDirectory)/src/ITLabReports'
               tags: ${{ variables.ImageTags }}
   - stage: deploy
     displayName: Deploy Service
