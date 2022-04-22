@@ -42,75 +42,48 @@ stages:
   - stage: Test
     displayName: Test reports service
     jobs:
-    - job: Test
-      strategy:
-        matrix:
-          testmace:
-            serviceName: testmace
-            artifactsFolder: tests/e2e/out-testmace
-            reportsPattern: 'testmace*.xml'
-          karate:
-            serviceName: karate
-            artifactsFolder: tests/e2e/out-karate
-            reportsPattern: '*.xml'
-      displayName: Test with
-      steps:
-      - task: CmdLine@2
-        displayName: run api
-        inputs:
-          script: 'docker-compose -f docker-compose.test.yml --ansi never up -d test-api'
-          workingDirectory: '.'
-      - task: CmdLine@2
-        displayName: run $(serviceName)
-        inputs:
-          script: 'docker-compose -f docker-compose.test.yml --ansi never up $(serviceName)'
-          workingDirectory: '.'
-      - task: CmdLine@2
-        displayName: show logs
-        inputs:
-          script: 'docker-compose -f docker-compose.test.yml --ansi never logs test-api'
-          workingDirectory: '.'
-      - task: CopyFiles@2
-        inputs:
-          SourceFolder: $(artifactsFolder)
-          Contents: '**'
-          TargetFolder: '$(Pipeline.Workspace)/test_result'
-          CleanTargetFolder: true
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: $(reportsPattern)
-          searchFolder: '$(Pipeline.Workspace)/test_result'
-          failTaskOnFailedTests: true
-
+      - job: Test
+        displayName: Run tests
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: '1.18'
+          - script: './RunTests.sh'
+            workingDirectory: 'src/ITLabReports'
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'TestReport.xml'
+              searchFolder: '$(Build.SourcesDirectory)/src/ITLabReports'
+              failTaskOnFailedTests: true
   - stage: packDockerImages
     condition: and(succeeded(), ${{ variables.buildImage }})
     displayName: Pack docker images
     jobs:
-    - job: buildPublicImage
-      displayName: Build public docker image
-      steps:
-      - task: Docker@2
-        displayName: Build image for docker hub
-        inputs:
-          containerRegistry: 'rtuitlab connection by admin'
-          repository: 'rtuitlab/itlab-reports-back'
-          command: 'buildAndPush'
-          Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-          buildContext: '$(Build.SourcesDirectory)'
-          tags: ${{ variables.ImageTags }}
-    - job: buildPrivateImage
-      displayName: Build private docker image
-      steps:
-      - task: Docker@2
-        displayName: Build image for private docker registry
-        inputs:
-          containerRegistry: 'private rtuitlab registry'
-          repository: 'rtuitlab/itlab-reports-back'
-          command: 'buildAndPush'
-          Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-          buildContext: '$(Build.SourcesDirectory)'
-          tags: ${{ variables.ImageTags }}
+      - job: buildPublicImage
+        displayName: Build public docker image
+        steps:
+          - task: Docker@2
+            displayName: Build image for docker hub
+            inputs:
+              containerRegistry: 'rtuitlab connection by admin'
+              repository: 'rtuitlab/itlab-reports-back'
+              command: 'buildAndPush'
+              Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+              buildContext: '$(Build.SourcesDirectory)'
+              tags: ${{ variables.ImageTags }}
+      - job: buildPrivateImage
+        displayName: Build private docker image
+        steps:
+          - task: Docker@2
+            displayName: Build image for private docker registry
+            inputs:
+              containerRegistry: 'private rtuitlab registry'
+              repository: 'rtuitlab/itlab-reports-back'
+              command: 'buildAndPush'
+              Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+              buildContext: '$(Build.SourcesDirectory)'
+              tags: ${{ variables.ImageTags }}
   - stage: deploy
     displayName: Deploy Service
     condition: and(succeeded(), ${{ variables.deployService }})
