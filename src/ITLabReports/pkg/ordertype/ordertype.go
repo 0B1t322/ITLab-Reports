@@ -27,11 +27,12 @@ OrderTypeFromInt get orderType in next formats:
 */
 func OrderTypeFromInt(orderType int) OrderType {
 	result := OrderType(orderType)
-	if result != ASC || result != DESC {
+	switch result {
+	case ASC, DESC:
+		return result
+	default:
 		return 0
 	}
-
-	return result
 }
 
 type TypeOrderer interface {
