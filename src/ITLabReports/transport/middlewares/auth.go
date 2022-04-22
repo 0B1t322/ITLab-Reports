@@ -104,8 +104,8 @@ func NewJWKSAuth(
 ) Auther {
 	a := &authJWKS{
 		UserRole: "user",
-		AdminRole: "admin",
-		SuperAdminRole: "superadmin",
+		AdminRole: "reports.admin",
+		SuperAdminRole: "admin",
 		RoleClaim: "claim",
 		JWKSUrl: "https://examaple.com",
 		refreshTime: time.Minute,
@@ -145,7 +145,7 @@ func (a *authJWKS) buildJWKS() error {
 			RefreshErrorHandler: func(err error) {
 				level.Error(a.logger).Log("err", err)
 			},
-			
+
 		},
 	)
 	if err != nil {

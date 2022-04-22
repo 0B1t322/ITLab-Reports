@@ -25,16 +25,16 @@ type Config struct {
 
 type AuthConfig struct {
 	KeyURL   string `envconfig:"ITLAB_REPORTS_AUTH_KEY_URL"`
-	Audience string `envconfig:"ITLAB_REPORTS_AUTH_AUDIENCE" default:"itlab"`
+	Audience string `default:"itlab" envconfig:"ITLAB_REPORTS_AUTH_AUDIENCE"`
 	Issuer   string `envconfig:"ITLAB_REPORTS_AUTH_ISSUER"`
 	Scope    string `envconfig:"ITLAB_REPORTS_AUTH_SCOPE"`
 	Roles    Roles
 }
 
 type Roles struct {
-	User       string `envconfig:"ITLAB_REPORTS_ROLE_USER" default:"user"`
-	Admin      string `envconfig:"ITLAB_REPORTS_ROLE_ADMIN" default:"reports.admin"`
-	SuperAdmin string `envconfig:"ITLAB_REPORTS_ROLE_SUPER_ADMIN" default:"admin"`
+	User       string `default:"user" envconfig:"ITLAB_REPORTS_ROLE_USER"`
+	Admin      string `default:"reports.admin" envconfig:"ITLAB_REPORTS_ROLE_ADMIN"`
+	SuperAdmin string `default:"admin" envconfig:"ITLAB_REPORTS_ROLE_SUPER_ADMIN"`
 }
 
 func GetConfig() *Config {
