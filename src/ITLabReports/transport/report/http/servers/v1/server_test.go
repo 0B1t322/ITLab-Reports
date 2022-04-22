@@ -458,115 +458,115 @@ func TestFunc_Server(t *testing.T) {
 		},
 	)
 
-	t.Run(
-		"GetReports",
-		func(t *testing.T) {
-			t.Run(
-				"Failure",
-				func(t *testing.T) {
-					mctx := mcontext.New(context.Background())
-					mctx.SetToken(notAuthUser)
+	// t.Run(
+	// 	"GetReports",
+	// 	func(t *testing.T) {
+	// 		t.Run(
+	// 			"Failure",
+	// 			func(t *testing.T) {
+	// 				mctx := mcontext.New(context.Background())
+	// 				mctx.SetToken(notAuthUser)
 
-					resp, err := httpEnds.GetReports(
-						mctx,
-						&dto.GetReportsReq{
-						},
-					)
-					require.Error(t, err)
-					require.Nil(t, resp)
-				},
-			)
+	// 				resp, err := httpEnds.GetReports(
+	// 					mctx,
+	// 					&dto.GetReportsReq{
+	// 					},
+	// 				)
+	// 				require.Error(t, err)
+	// 				require.Nil(t, resp)
+	// 			},
+	// 		)
 
-			t.Run(
-				"Success",
-				func(t *testing.T) {
-					t.Run(
-						"UserGetReportsWithTheir",
-						func(t *testing.T) {
-							mctx := mcontext.New(context.Background())
-							mctx.SetToken(user1Token)
+	// 		t.Run(
+	// 			"Success",
+	// 			func(t *testing.T) {
+	// 				t.Run(
+	// 					"UserGetReportsWithTheir",
+	// 					func(t *testing.T) {
+	// 						mctx := mcontext.New(context.Background())
+	// 						mctx.SetToken(user1Token)
 
-							id := "user_1_id"
-							resp, err := httpEnds.GetReports(
-								mctx,
-								&dto.GetReportsReq{
-									Implementer: id,
-									Reporter: id,
-								},
-							)
-							require.NoError(t, err)
-							require.NotNil(t, resp)
-						},
-					)
+	// 						id := "user_1_id"
+	// 						resp, err := httpEnds.GetReports(
+	// 							mctx,
+	// 							&dto.GetReportsReq{
+	// 								Implementer: id,
+	// 								Reporter: id,
+	// 							},
+	// 						)
+	// 						require.NoError(t, err)
+	// 						require.NotNil(t, resp)
+	// 					},
+	// 				)
 
-					t.Run(
-						"UserGetReportsWithNotTheir",
-						func(t *testing.T) {
-							mctx := mcontext.New(context.Background())
-							mctx.SetToken(user1Token)
+	// 				t.Run(
+	// 					"UserGetReportsWithNotTheir",
+	// 					func(t *testing.T) {
+	// 						mctx := mcontext.New(context.Background())
+	// 						mctx.SetToken(user1Token)
 
-							id := "user_2_id"
+	// 						id := "user_2_id"
 
-							req := &dto.GetReportsReq{
-								Implementer: id,
-								Reporter: id,
-							}
+	// 						req := &dto.GetReportsReq{
+	// 							Implementer: id,
+	// 							Reporter: id,
+	// 						}
 
-							resp, err := httpEnds.GetReports(
-								mctx,
-								req,
-							)
-							require.NoError(t, err)
-							require.NotNil(t, resp)
+	// 						resp, err := httpEnds.GetReports(
+	// 							mctx,
+	// 							req,
+	// 						)
+	// 						require.NoError(t, err)
+	// 						require.NotNil(t, resp)
 
-							require.Equal(
-								t,
-								"user_1_id",
-								req.Implementer,
-							)
+	// 						require.Equal(
+	// 							t,
+	// 							"user_1_id",
+	// 							req.Implementer,
+	// 						)
 
-							require.Equal(
-								t,
-								"user_1_id",
-								req.Implementer,
-							)
-						},
-					)
+	// 						require.Equal(
+	// 							t,
+	// 							"user_1_id",
+	// 							req.Implementer,
+	// 						)
+	// 					},
+	// 				)
 
-					t.Run(
-						"AdminGetReportsForUser",
-						func(t *testing.T) {
-							mctx := mcontext.New(context.Background())
-							mctx.SetToken(adminToken)
+	// 				t.Run(
+	// 					"AdminGetReportsForUser",
+	// 					func(t *testing.T) {
+	// 						mctx := mcontext.New(context.Background())
+	// 						mctx.SetToken(adminToken)
 
-							id := "user_2_id"
-							req := &dto.GetReportsReq{
-								Implementer: id,
-								Reporter: id,
-							}
+	// 						id := "user_2_id"
+	// 						req := &dto.GetReportsReq{
+	// 							Implementer: id,
+	// 							Reporter: id,
+	// 						}
 
-							resp, err := httpEnds.GetReports(
-								mctx,
-								req,
-							)
-							require.NoError(t, err)
-							require.NotNil(t, resp)
+	// 						resp, err := httpEnds.GetReports(
+	// 							mctx,
+	// 							req,
+	// 						)
+	// 						require.NoError(t, err)
+	// 						require.NotNil(t, resp)
 
-							require.Equal(
-								t,
-								"user_2_id",
-								req.Implementer,
-							)
+	// 						require.Equal(
+	// 							t,
+	// 							"user_2_id",
+	// 							req.Implementer,
+	// 						)
 
-							require.Equal(
-								t,
-								"user_2_id",
-								req.Implementer,
-							)
-						},
-					)
-				},
-			)
-		},
-	)
+	// 						require.Equal(
+	// 							t,
+	// 							"user_2_id",
+	// 							req.Implementer,
+	// 						)
+	// 					},
+	// 				)
+	// 			},
+	// 		)
+	// 	},
+	// )
 }
