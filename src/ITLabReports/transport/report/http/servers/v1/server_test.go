@@ -506,15 +506,30 @@ func TestFunc_Server(t *testing.T) {
 							mctx.SetToken(user1Token)
 
 							id := "user_2_id"
+
+							req := &dto.GetReportsReq{
+								Implementer: id,
+								Reporter: id,
+							}
+
 							resp, err := httpEnds.GetReports(
 								mctx,
-								&dto.GetReportsReq{
-									Implementer: id,
-									Reporter: id,
-								},
+								req,
 							)
 							require.NoError(t, err)
 							require.NotNil(t, resp)
+
+							require.Equal(
+								t,
+								"user_1_id",
+								req.Implementer,
+							)
+
+							require.Equal(
+								t,
+								"user_1_id",
+								req.Implementer,
+							)
 						},
 					)
 
@@ -525,15 +540,29 @@ func TestFunc_Server(t *testing.T) {
 							mctx.SetToken(adminToken)
 
 							id := "user_2_id"
+							req := &dto.GetReportsReq{
+								Implementer: id,
+								Reporter: id,
+							}
+
 							resp, err := httpEnds.GetReports(
 								mctx,
-								&dto.GetReportsReq{
-									Implementer: id,
-									Reporter: id,
-								},
+								req,
 							)
 							require.NoError(t, err)
 							require.NotNil(t, resp)
+
+							require.Equal(
+								t,
+								"user_2_id",
+								req.Implementer,
+							)
+
+							require.Equal(
+								t,
+								"user_2_id",
+								req.Implementer,
+							)
 						},
 					)
 				},
