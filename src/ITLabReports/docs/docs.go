@@ -23,6 +23,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
+                "description": "# Description \n\n**Return a list of reports**\n\n## If you are admin\nreturn a list of reports of all user\n\n## If you are a user\nreturn a list of your reports\n\n## Params\n### Query\n1. ` + "`" + `sorted_by` + "`" + ` - sort by ` + "`" + `name` + "`" + ` or ` + "`" + `date` + "`" + `. In both sort ascending\n",
                 "produces": [
                     "application/json"
                 ],
@@ -60,7 +61,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "create report\nquery value implementer indicate who make things described in report\nname is optional field, if use it text should be in standart md format\nif name is not given text should be in format \"report_name@\\n\\t\\n@report_rext\"\nif implementor is not specified report-maker is implementor",
+                "description": "create report\n# Description \n\n**Create a report**\n\nHave ` + "`" + `implementer` + "`" + ` query param that Indicates who the report is about, if not specifed - by default it's you.\n\n` + "`" + `name` + "`" + ` field is optional so you can create report with two ways:\n\n## Creating by only ` + "`" + `` + "`" + `` + "`" + `text` + "`" + `` + "`" + `` + "`" + ` field\n\nTo create by only text field you should to set in text field ` + "`" + `` + "`" + `` + "`" + `name` + "`" + `` + "`" + `` + "`" + ` of report and field ` + "`" + `` + "`" + `` + "`" + `text` + "`" + `` + "`" + `` + "`" + ` and separet it with ` + "`" + `` + "`" + `` + "`" + `@\\n\\t\\n@` + "`" + `` + "`" + `` + "`" + `\nFor example next body will create report with ` + "`" + `` + "`" + `` + "`" + `name` + "`" + `` + "`" + `` + "`" + ` report_text and with ` + "`" + `` + "`" + `` + "`" + `text` + "`" + `` + "`" + `` + "`" + ` report text\n` + "`" + `` + "`" + `` + "`" + `json\n{\n    \"text\": \"report_text@\\n\\t\\n@report_text\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\n## Creating by ` + "`" + `` + "`" + `` + "`" + `text` + "`" + `` + "`" + `` + "`" + ` and ` + "`" + `` + "`" + `` + "`" + `name` + "`" + `` + "`" + `` + "`" + ` fields\n\nIt's more **preferred** method just send next body:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n    \"name\": \"report_name\",\n    \"text\": \"report_text\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\n# Errors\n\n## 400 Bad request\n1. If ` + "`" + `name` + "`" + ` and ` + "`" + `text` + "`" + ` fields is empty\n2. If ` + "`" + `name` + "`" + ` is not empty, ` + "`" + `text` + "`" + ` is empty\n\n",
                 "produces": [
                     "application/json"
                 ],
@@ -102,7 +103,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get reports for current employee",
+                "description": "# Description \n\n**Return reports list for employee**\n\n# Errors\n## 400 Bad request\n1. If employee path param is empty\nexample on: \n` + "`" + `` + "`" + `` + "`" + `\n/reports/employee/\n` + "`" + `` + "`" + `` + "`" + `\n\n## 403 Forbiden\n1. If you try to get reports of another user and you are not admin \n",
                 "produces": [
                     "application/json"
                 ],
@@ -151,6 +152,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
+                "description": "# Description \n\n**Return a report**\n\n# Errors\n## 404 Not found\n1. If report is not found\n\n## 400 Bad request\n1. If ` + "`" + `id` + "`" + ` param is not valid\n\n## 403 Forbiden\n1. If you try to get report of another user and you are not admin \n",
                 "produces": [
                     "application/json"
                 ],
@@ -258,7 +260,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "ITLab-Reports API",
-	Description:      "This is a server to work with reports",
+	Description:      "This is server to work with reports\n\n[Source-code repository](https://github.com/RTUITLab/ITLab-Reports-Back)\n\nAll endpoints error have next structer\n\n```js\n{\n    \"error\": \"some_error\"\n}\n```",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

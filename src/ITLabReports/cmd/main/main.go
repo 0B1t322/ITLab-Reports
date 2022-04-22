@@ -8,6 +8,7 @@ import (
 // @title ITLab-Reports API
 // @version 1.0
 // @description This is a server to work with reports
+// @description.markdown
 // @BasePath /api
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header

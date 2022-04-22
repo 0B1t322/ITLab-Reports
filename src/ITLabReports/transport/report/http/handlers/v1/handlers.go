@@ -17,6 +17,8 @@ import (
 // @Tags reports
 //
 // @Summary return report
+// 
+// @Description.markdown get_report
 //
 // @Router /reports/{id} [get]
 //
@@ -49,7 +51,7 @@ func GetReport(
 //
 // @Summary get reports for employee
 //
-// @Description get reports for current employee
+// @Description.markdown get_reports_for_employee
 //
 // @Router /reports/employee/{employee} [get]
 //
@@ -85,6 +87,8 @@ func GetReportsForEmployee(
 // @Tags reports
 //
 // @Summary get report list
+// 
+// @Description.markdown get_reports_v1
 //
 // @Router /reports [get]
 //
@@ -118,14 +122,8 @@ func GetReports(
 // @Summary create report
 //
 // @Description create report
-//
-// @Description query value implementer indicate who make things described in report
 // 
-// @Description name is optional field, if use it text should be in standart md format
-// 
-// @Description if name is not given text should be in format "report_name@\n\t\n@report_rext"
-//
-// @Description if implementor is not specified report-maker is implementor
+// @Description.markdown create_report_v1
 //
 // @Router /reports [post]
 //
