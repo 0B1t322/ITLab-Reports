@@ -342,7 +342,9 @@ func (m *MongoRepository) GetReports(
 			return nil, err
 		}
 
-		cur.All(ctx, &mgReports)
+		if err := cur.All(ctx, &mgReports); err != nil {
+			return nil, err
+		}
 	}
 
 	var reports []*report.Report
