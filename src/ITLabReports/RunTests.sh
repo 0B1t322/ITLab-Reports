@@ -1,7 +1,7 @@
 #!/bin/bash
 docker-compose -f ../../docker-compose.test.yml up -d test-db 2>&1
-export ITLAB_REPORTS_MONGO_URI=mongodb://root:root@localhost:27018/itlab-projects?authSource=admin
-export ITLAB_PROJECTS_MONGO_TEST_URI=mongodb://root:root@localhost:27018/itlab-projects-test?authSource=admin
+export ITLAB_REPORTS_MONGO_URI=mongodb://root:root@localhost:27018/itlab-reports?authSource=admin
+export ITLAB_REPORTS_MONGO_TEST_URI=mongodb://root:root@localhost:27018/itlab-reports-test?authSource=admin
 
 go install github.com/jstemmer/go-junit-report 2>&1
 go install github.com/axw/gocov/gocov 2>&1
