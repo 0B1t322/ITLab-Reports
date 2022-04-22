@@ -8,6 +8,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/domain/report/mongo"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	service "github.com/RTUITLab/ITLab-Reports/service/reports"
+	m "go.mongodb.org/mongo-driver/mongo"
 )
 
 type ServiceConfiguration func(rp *ReportService) error
@@ -35,6 +36,25 @@ func WithMongoRepository(connString string) ServiceConfiguration {
 		repo, err := mongo.New(
 			context.Background(),
 			connString,
+		)
+		if err != nil {
+			return err
+		}
+
+		rp.ReportRepository = repo
+		return nil
+	}
+}
+
+func WithMongoRepositoryWithClient(
+	connString string,
+	client *m.Client,
+) ServiceConfiguration {
+	return func(rp *ReportService) error {
+		repo, err := mongo.New(
+			context.Background(),
+			connString,
+			mongo.WithClient(client),
 		)
 		if err != nil {
 			return err

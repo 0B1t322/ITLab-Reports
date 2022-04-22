@@ -11,17 +11,23 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/mongobuildertofilter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/ordertypetomongo"
 	builder "github.com/RTUITLab/ITLab-Reports/pkg/dialect/mongo"
+	"github.com/sirupsen/logrus"
+	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
+
+	_ "github.com/RTUITLab/ITLab-Reports/migrations/mongo"
 )
 
 type Report = modelReport.Report
 type Assignees = modelAssignes.Assignees
 
 type MongoRepository struct {
+	client *mongo.Client
+
 	db *mongo.Database
 
 	reports *mongo.Collection
@@ -37,6 +43,29 @@ func WithCollectionName(collection string) MongoRepositoryOptions {
 	}
 }
 
+func WithClient(client *mongo.Client) MongoRepositoryOptions {
+	return func(m *MongoRepository) {
+		m.client = client
+	}
+}
+
+func (m *MongoRepository) createClient(
+	ctx context.Context,
+	connString string,
+) error {
+	conn, err := mongo.Connect(
+		ctx,
+		options.Client().
+			ApplyURI(connString),
+	)
+	if err != nil {
+		return err
+	}
+
+	m.client = conn
+	return nil
+}
+
 func New(
 	ctx context.Context,
 	connString string,
@@ -48,13 +77,10 @@ func New(
 		opt(r)
 	}
 
-	conn, err := mongo.Connect(
-		ctx,
-		options.Client().
-			ApplyURI(connString),
-	)
-	if err != nil {
-		return nil, err
+	if r.client == nil {
+		if err := r.createClient(ctx, connString); err != nil {
+			return nil, err
+		}
 	}
 
 	connStr, err := connstring.Parse(connString)
@@ -62,19 +88,29 @@ func New(
 		return nil, err
 	}
 
-	r.db = conn.Database(connStr.Database)
+	r.db = r.client.Database(connStr.Database)
 
 	if r.collectionName == "" {
 		r.collectionName = "reports"
 	}
 	r.reports = r.db.Collection(r.collectionName)
 
+	migrate.SetDatabase(r.db)
+	if err := migrate.Up(migrate.AllAvailable); err != nil {
+		logrus.WithFields(
+			logrus.Fields{
+				"from": "NewReportsRepository",
+				"err": err,
+			},
+		).Panic("Failed to migrate")
+	}
+
 	return r, nil
 }
 
 
 
-type mongoReportModel struct {
+type MongoReportModel struct {
 	ID primitive.ObjectID `bson:"_id"`
 
 	Name string `bson:"name"`
@@ -83,15 +119,17 @@ type mongoReportModel struct {
 
 	Text string `bson:"text"`
 
-	Assignees assignesModel `bson:"assignees"`
+	Assignees MongoAssignesModel `bson:"assignees"`
 }
 
-type assignesModel struct {
+// Чтобы работало со старыми данными где дата почему то строка 
+
+type MongoAssignesModel struct {
 	Reporter    string `bson:"reporter"`
 	Implementer string `bson:"implementer"`
 }
 
-func (m mongoReportModel) ToAgragate() *report.Report {
+func (m MongoReportModel) ToAgragate() *report.Report {
 	return &report.Report{
 		Report: &Report{
 			ID: m.ID.Hex(),
@@ -106,12 +144,12 @@ func (m mongoReportModel) ToAgragate() *report.Report {
 	}
 }
 
-func fromAgragate(report *report.Report) mongoReportModel {
-	return mongoReportModel{
+func fromAgragate(report *report.Report) MongoReportModel {
+	return MongoReportModel{
 		Name: report.Report.Name,
 		Date: report.Report.Date,
 		Text: report.Report.Text,
-		Assignees: assignesModel{
+		Assignees: MongoAssignesModel{
 			Reporter: report.Assignees.Reporter,
 			Implementer: report.Assignees.Implementer,
 		},
@@ -135,7 +173,7 @@ func (m *MongoRepository) GetReport(
 		return nil, err
 	}
 
-	var get mongoReportModel
+	var get MongoReportModel
 	{
 		sr := m.reports.FindOne(
 			ctx,
@@ -331,7 +369,7 @@ func (m *MongoRepository) GetReports(
 	ctx context.Context,
 	params *domain.GetReportsParams,
 ) ([]*report.Report, error) {
-	var mgReports []mongoReportModel
+	var mgReports []MongoReportModel
 	{
 		cur, err := m.reports.Find(
 			ctx,

@@ -15,16 +15,15 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/http-swagger v1.2.6
 	github.com/swaggo/swag v1.8.1
+	github.com/xakep666/mongo-migrate v0.2.1
 	go.mongodb.org/mongo-driver v1.9.0
 	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
 )
 
 require (
-	github.com/AlekSi/gocov-xml v1.0.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
-	github.com/axw/gocov v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-kit/log v0.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
@@ -35,7 +34,6 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/jstemmer/go-junit-report v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
