@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFunc_Func(t *testing.T) {
+func TestFunc_Server(t *testing.T) {
 	cfg := config.GetConfigFrom(
 		"./../../../../../.env",
 	)
@@ -27,7 +27,7 @@ func TestFunc_Func(t *testing.T) {
 	s, err := reportservice.New(
 		reportservice.WithMongoRepository(cfg.MongoDB.TestURI),
 	)
-	require.NoError(t, err)
+	require.NoError(t, err, err)
 
 	ends := report.MakeEndpoints(s)
 

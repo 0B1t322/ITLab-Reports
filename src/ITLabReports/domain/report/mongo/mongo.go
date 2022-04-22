@@ -65,7 +65,7 @@ func New(
 	r.db = conn.Database(connStr.Database)
 
 	if r.collectionName == "" {
-		r.collectionName = "repots"
+		r.collectionName = "reports"
 	}
 	r.reports = r.db.Collection(r.collectionName)
 
