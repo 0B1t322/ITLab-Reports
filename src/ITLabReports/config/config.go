@@ -55,5 +55,11 @@ func GetConfigFrom(filePath string) *Config {
 			},
 		).Fatal("Can't read env vars, shutting down...")
 	}
+
+	log.WithFields(
+		log.Fields{
+			"from": "GetConfig",
+		},
+	).Infof("config: %+v", config)
 	return &config
 }
