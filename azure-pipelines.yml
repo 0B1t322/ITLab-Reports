@@ -43,46 +43,16 @@ stages:
     displayName: Test reports service
     jobs:
     - job: Test
-      strategy:
-        matrix:
-          testmace:
-            serviceName: testmace
-            artifactsFolder: tests/e2e/out-testmace
-            reportsPattern: 'testmace*.xml'
-          karate:
-            serviceName: karate
-            artifactsFolder: tests/e2e/out-karate
-            reportsPattern: '*.xml'
-      displayName: Test with
+      displayName: Run tests
       steps:
-      - task: CmdLine@2
-        displayName: run api
-        inputs:
-          script: 'docker-compose -f docker-compose.test.yml --ansi never up -d test-api'
-          workingDirectory: '.'
-      - task: CmdLine@2
-        displayName: run $(serviceName)
-        inputs:
-          script: 'docker-compose -f docker-compose.test.yml --ansi never up $(serviceName)'
-          workingDirectory: '.'
-      - task: CmdLine@2
-        displayName: show logs
-        inputs:
-          script: 'docker-compose -f docker-compose.test.yml --ansi never logs test-api'
-          workingDirectory: '.'
-      - task: CopyFiles@2
-        inputs:
-          SourceFolder: $(artifactsFolder)
-          Contents: '**'
-          TargetFolder: '$(Pipeline.Workspace)/test_result'
-          CleanTargetFolder: true
+      - script: './RunTests.sh'
+        workingDirectory: 'src/ITLabReports'
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'JUnit'
-          testResultsFiles: $(reportsPattern)
-          searchFolder: '$(Pipeline.Workspace)/test_result'
+          testResultsFiles: 'TestReport.xml'
+          searchFolder: '$(Build.SourcesDirectory)/src/ITLabReports'
           failTaskOnFailedTests: true
-
   - stage: packDockerImages
     condition: and(succeeded(), ${{ variables.buildImage }})
     displayName: Pack docker images
