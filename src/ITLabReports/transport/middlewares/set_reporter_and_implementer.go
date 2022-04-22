@@ -8,6 +8,7 @@ type ReqWithSetImplementorAndReporter interface{
 	SetImplementerAndReporter(implementer, reporter string)
 }
 
+// Deprecated
 func SetReporterAndImplementerIfFailed[Req ReqWithSetImplementorAndReporter, Resp any](
 	m MiddlewareWithContext[Req, Resp],
 ) MiddlewareWithContext[Req, Resp] {
@@ -25,6 +26,23 @@ func SetReporterAndImplementerIfFailed[Req ReqWithSetImplementorAndReporter, Res
 
 				request.SetImplementerAndReporter(id, id)
 			}
+
+			return next(ctx, request)
+		}
+	}
+}
+
+func SetReporterAndImplementer[Req ReqWithSetImplementorAndReporter, Resp any]() MiddlewareWithContext[Req, Resp] {
+	return func(next EndpointWithContext[Req, Resp]) EndpointWithContext[Req, Resp] {
+		return func(
+			ctx context.MiddlewareContext, 
+			request Req,
+		) (Resp, error) {
+			id, err := ctx.GetUserID()
+			if err != nil {
+				return *new(Resp), err
+			}
+			request.SetImplementerAndReporter(id, id)
 
 			return next(ctx, request)
 		}

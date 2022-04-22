@@ -21,7 +21,7 @@ func MergeMiddlewaresIntoOr[Req any, Resp any](
 			var success bool = false
 
 			for _, m := range ms {
-				_, err = m(next)(ctx, request)
+				_, err = m(Nop[Req, Resp])(ctx, request)
 				if err == nil {
 					success = true
 					break
@@ -33,6 +33,35 @@ func MergeMiddlewaresIntoOr[Req any, Resp any](
 			}
 
 			return *new(Resp), err
+		}
+	}
+}
+
+func RunMiddlewareIfAllFail[Req any, Resp any](
+	runIfFail MiddlewareWithContext[Req, Resp],
+	ms ...MiddlewareWithContext[Req, Resp],
+) MiddlewareWithContext[Req, Resp] {
+	return func(next EndpointWithContext[Req, Resp]) EndpointWithContext[Req, Resp] {
+		return func(
+			ctx context.MiddlewareContext, 
+			request Req,
+		) (Resp, error) {
+			var err error
+			var success bool = false
+
+			for _, m := range ms {
+				_, err = m(Nop[Req, Resp])(ctx, request)
+				if err == nil {
+					success = true
+					break
+				}
+			}
+
+			if success {
+				return next(ctx, request)
+			} else {
+				return runIfFail(next)(ctx, request)
+			}
 		}
 	}
 }
