@@ -49,7 +49,7 @@ func NewServer(
 	}
 
 	r.Handle(
-		"reports/v2/reports",
+		"/reports/v2/reports",
 		GetReports(e),
 	).Methods(http.MethodGet)
 }
