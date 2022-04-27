@@ -65,6 +65,7 @@ func (a *App) BuildReportsHTTP() error {
 	e := a.BuildReportsEndpoints(s)
 
 	a.BuildReportsHTTPV1(e)
+	a.BuildReportsHTTPV2(e)
 	return nil
 }
 

@@ -122,8 +122,6 @@ type MongoReportModel struct {
 	Assignees MongoAssignesModel `bson:"assignees"`
 }
 
-// Чтобы работало со старыми данными где дата почему то строка 
-
 type MongoAssignesModel struct {
 	Reporter    string `bson:"reporter"`
 	Implementer string `bson:"implementer"`

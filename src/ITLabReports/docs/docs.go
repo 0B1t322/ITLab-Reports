@@ -145,6 +145,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/reports/v2/reports": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Return a list of reports**\n\n## Params\n### Query\n1. ` + "`" + `offset` + "`" + ` - the offset of the searching should be greater or equal 0, else it will be ignore\n2. ` + "`" + `limit` + "`" + ` - the limit of getted reports, should be greater or equal 1, else it will be ignore\n3. ` + "`" + `sortBy` + "`" + ` - the sorting of reports, should be in format ` + "`" + `field_1:ordering` + "`" + `, where ` + "`" + `ordering` + "`" + ` can be: \"asc\", \"ASC\", \"1\" or \"desc\", \"DESC\", \"-1\". Can be passed more than one ` + "`" + `sortBy` + "`" + `.\n    3.1. ` + "`" + `name:ordering` + "`" + ` - sort by name\n    3.2. ` + "`" + `date:ordering` + "`" + ` - sort by date\n4. ` + "`" + `dateBegin` + "`" + ` - find reports whose date greater or equal then passed date. Date should be in format RFC3339 for example ` + "`" + `dateBegin=2019-10-12T07:20:50.52Z` + "`" + `\n5. ` + "`" + `dateEnd` + "`" + ` - find reports whose date lower or equal then passed date. Date should be in format RFC3339 for example ` + "`" + `dateEnd=2019-10-12T07:20:50.52Z` + "`" + `\n6. ` + "`" + `match` + "`" + ` - passed match params into filtering. match should be in format ` + "`" + `field_1:value_1` + "`" + `, else it will be ignore. Can be passed more than one ` + "`" + `match` + "`" + `.\n    6.1. ` + "`" + `name:value` + "`" + ` - find reports whose name is like passed ` + "`" + `value` + "`" + `\n    6.2. ` + "`" + `date:value` + "`" + ` - find reports whose date is equal passed ` + "`" + `value` + "`" + `, date should be in format RFC3339, for example ` + "`" + `match=date:2019-10-12T07:20:50.52Z` + "`" + `\n    6.3. ` + "`" + `assignees.implementer:value` + "`" + ` - find reports whose implementer is equal passed ` + "`" + `value` + "`" + `, can work only if you are admin, else it will be unset\n    6.4. ` + "`" + `assignees.reporter:value` + "`" + ` - find reports whose reporter is equal passed ` + "`" + `value` + "`" + `, can work only if you are admin, else it will be unset\n## Responce fields\n1. ` + "`" + `count` + "`" + ` - the current count of elements in ` + "`" + `items` + "`" + ` field.\n2. ` + "`" + `items` + "`" + ` - the getted reports.\n3. ` + "`" + `hasMore` + "`" + ` - indecate that you can get new reports by increase ` + "`" + `offset` + "`" + ` param.\n4. ` + "`" + `limit` + "`" + ` - the passed ` + "`" + `limit` + "`" + ` param.\n5. ` + "`" + `offset` + "`" + ` - the passed ` + "`" + `offset` + "`" + ` param.\n6. ` + "`" + `totalResult` + "`" + ` - how mush reports you can get by passing this request with this filtering params.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "return reports according to filters",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "date in RFC3339",
+                        "name": "dateBegin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "date in RFC3339",
+                        "name": "dateEnd",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "match query",
+                        "name": "match",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sorting query",
+                        "name": "sortBy",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetReportsRespV2"
+                        }
+                    }
+                }
+            }
+        },
         "/reports/{id}": {
             "get": {
                 "security": [
@@ -240,6 +303,32 @@ const docTemplate = `{
                 },
                 "text": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetReportsRespV2": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GetReportResp"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "totalResult": {
+                    "type": "integer"
                 }
             }
         }
