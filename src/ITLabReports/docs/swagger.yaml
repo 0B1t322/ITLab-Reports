@@ -1,5 +1,25 @@
 basePath: /api
 definitions:
+  dto.CreateDraftReq:
+    properties:
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  dto.CreateDraftResp:
+    properties:
+      assignees:
+        $ref: '#/definitions/dto.GetAssignesResp'
+      date:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      text:
+        type: string
+    type: object
   dto.CreateReportReq:
     properties:
       name:
@@ -26,6 +46,33 @@ definitions:
         type: string
       reporter:
         type: string
+    type: object
+  dto.GetAssignesResp:
+    properties:
+      implementer:
+        type: string
+      reporter:
+        type: string
+    type: object
+  dto.GetDraftResp:
+    properties:
+      assignees:
+        $ref: '#/definitions/dto.GetAssignesResp'
+      date:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  dto.GetDraftsResp:
+    properties:
+      drafts:
+        items:
+          $ref: '#/definitions/dto.GetDraftResp'
+        type: array
     type: object
   dto.GetReportResp:
     properties:
@@ -56,6 +103,31 @@ definitions:
         type: integer
       totalResult:
         type: integer
+    type: object
+  dto.UpdateDraftReq:
+    properties:
+      implementer:
+        type: string
+        x-nullable: true
+      name:
+        type: string
+        x-nullable: true
+      text:
+        type: string
+        x-nullable: true
+    type: object
+  dto.UpdateDraftResp:
+    properties:
+      assignees:
+        $ref: '#/definitions/dto.GetAssignesResp'
+      date:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      text:
+        type: string
     type: object
 info:
   contact: {}
@@ -193,6 +265,158 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: get reports for employee
+      tags:
+      - reports
+  /reports/v1/draft:
+    get:
+      description: "# Description \n\n**Return a drafts**\n\nReturn a drafts for user
+        sorted by date ascending\n"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetDraftsResp'
+      security:
+      - ApiKeyAuth: []
+      summary: return a drafts for user
+      tags:
+      - draft
+    post:
+      consumes:
+      - application/json
+      description: "# Description \n\n**Create draft**\n\nCreate a draft with specifed
+        `text` and `name`. `implementer` is optional query parameter, if not set in
+        default - it's you.\n\n## Params\n### Query\n1. `implementer` - id of user,
+        that implements this draft\n\n## Errors\n### 400 - Bad Request\n1. If `text`
+        or `name` is empty\n"
+      parameters:
+      - description: a body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDraftReq'
+      - description: a id of implementer
+        in: query
+        name: implementer
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateDraftResp'
+      security:
+      - ApiKeyAuth: []
+      summary: create a draft
+      tags:
+      - draft
+  /reports/v1/draft/{id}:
+    delete:
+      description: "# Description \n\n**Delete draft**\n## Params\n### Path\n1. `id`
+        - id of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found
+        `draft` with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n###
+        403 - Forbiden\n1. If you are not owner of this `draft`\n"
+      parameters:
+      - description: id of draft
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "204":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: delete a draft
+      tags:
+      - draft
+    get:
+      description: "# Description \n\n**Return a draft**\n## Params\n### Path\n1.
+        `id` - id of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found
+        `draft` with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n###
+        403 - Forbiden\n1. If you are not owner of this `draft`\n"
+      parameters:
+      - description: id of draft
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetDraftResp'
+      security:
+      - ApiKeyAuth: []
+      summary: return a draft
+      tags:
+      - draft
+    put:
+      consumes:
+      - application/json
+      description: "# Description \n\n**Update draft**\n\nUpdate in draft only fields
+        specifeid on body\n\nYou can update nothing but it's important to send empty
+        json object:\n```json\n{\n\n}\n```\n\n## Params\n### Path\n1. `id` - id of
+        `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found `draft`
+        with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n2.
+        Try to set `text` or `name` or `implementer` to empty.\n### 403 - Forbiden\n1.
+        If you are not owner of this `draft`\n"
+      parameters:
+      - description: id of draft
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: a body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDraftReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateDraftResp'
+      security:
+      - ApiKeyAuth: []
+      summary: update a draft
+      tags:
+      - draft
+  /reports/v1/report_from_draft/{id}:
+    post:
+      description: "# Description \n\n**Create a report from draft**\n\nCreate report
+        from specified draft and **delete** it\n\n## Params\n### Path\n1. `id` - id
+        of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found `draft`
+        with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n###
+        403 - Forbiden\n1. If you are not owner of this `draft`\n"
+      parameters:
+      - description: id of draft
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateReportResp'
+      security:
+      - ApiKeyAuth: []
+      summary: create report from draft
       tags:
       - reports
   /reports/v2/reports:

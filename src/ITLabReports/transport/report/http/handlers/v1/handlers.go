@@ -138,7 +138,7 @@ func GetReports(
 // @Produce json
 //
 // @Success 200 {object} dto.CreateReportResp
-func CreateReports(
+func CreateReport(
 	e Endpoints,
 ) http.Handler {
 	return genhttp.NewServer(
@@ -154,7 +154,23 @@ func CreateReports(
 	)
 }
 
-
+// CreateReportFromDraft
+//
+// @Tags reports
+//
+// @Summary create report from draft
+//
+// @Description.markdown create_report_from_draft
+//
+// @Router /reports/v1/report_from_draft/{id} [post]
+// 
+// @Param id path string true "id of draft"
+//
+// @Security ApiKeyAuth
+//
+// @Produce json
+//
+// @Success 201 {object} dto.CreateReportResp
 func CreateReportFromDraftHandler(
 	e DraftServiceEndpoints,
 ) http.Handler {

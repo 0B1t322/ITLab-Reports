@@ -14,7 +14,7 @@ func EncodeDeleteDraftResp(
 	w http.ResponseWriter,
 	resp * DeleteDraftResp,
 ) error {
-	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusNoContent)
+	w.Header().Add("Content-Type", "text/plain")
 	return nil
 }

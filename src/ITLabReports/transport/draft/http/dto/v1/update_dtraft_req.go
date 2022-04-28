@@ -13,9 +13,9 @@ import (
 
 type UpdateDraftReq struct {
 	ID          string                    `json:"-" swaggerignore:"true"`
-	Name        optional.Optional[string] `json:"name" swaggertype:"string" extensions:"x-nullable"`
-	Text        optional.Optional[string] `json:"text" swaggertype:"string" extensions:"x-nullable"`
-	Implementer optional.Optional[string] `json:"implementer" swaggertype:"string" extensions:"x-nullable"`
+	Name        string `json:"name" swaggertype:"string" extensions:"x-nullable"`
+	Text        string `json:"text" swaggertype:"string" extensions:"x-nullable"`
+	Implementer string `json:"implementer" swaggertype:"string" extensions:"x-nullable"`
 }
 
 func (u *UpdateDraftReq) GetID() string {
@@ -23,12 +23,27 @@ func (u *UpdateDraftReq) GetID() string {
 }
 
 func (u *UpdateDraftReq) ToEndpointReq() *reqresp.UpdateReportReq {
+	name := optional.NewEmptyOptional[string]()
+	if u.Name != "" {
+		name.SetValue(u.Name)
+	}
+
+	text := optional.NewEmptyOptional[string]()
+	if u.Text != "" {
+		text.SetValue(u.Text)
+	}
+
+	implementer := optional.NewEmptyOptional[string]()
+	if u.Implementer != "" {
+		implementer.SetValue(u.Implementer)
+	}
+
 	return &reqresp.UpdateReportReq{
 		ID: u.ID,
 		Params: report.UpdateReportParams{
-			Name:        u.Name,
-			Text:        u.Text,
-			Implementer: u.Implementer,
+			Name:        *name,
+			Text:        *text,
+			Implementer: *implementer,
 		},
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
+	rerr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	"github.com/clarketm/json"
 	"github.com/sirupsen/logrus"
@@ -33,10 +34,11 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 		statusCode = http.StatusUnauthorized
 	// BadRequest 
 	case 	err == reports.ErrReportIDNotValid, errors.Is(err, reports.ErrValidationError), 
+			err == rerr.DraftIdNotValud,
 			errors.Is(err, serr.ValidationError):
 		statusCode = http.StatusBadRequest
 	// NotFound
-	case err == reports.ErrReportNotFound:
+	case err == reports.ErrReportNotFound, err == rerr.DraftNotFound:
 		statusCode = http.StatusNotFound
 	default:
 		statusCode = http.StatusInternalServerError

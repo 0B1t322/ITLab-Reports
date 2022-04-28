@@ -66,7 +66,7 @@ func NewServer(
 
 	if s.draftService != nil {
 		r.Handle(
-			"/reports/v1/reports_from_draft/{id}",
+			"/reports/v1/report_from_draft/{id}",
 			CreateReportFromDraftHandler(
 				endpoints.NewDraftServiceEndpoints(s.draftService, e),
 			),
@@ -92,7 +92,7 @@ func NewServer(
 
 	r.Handle(
 		"/reports",
-		CreateReports(e),
+		CreateReport(e),
 	).Methods(http.MethodPost)
 
 	return e

@@ -137,6 +137,216 @@
                 }
             }
         },
+        "/reports/v1/draft": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Return a drafts**\n\nReturn a drafts for user sorted by date ascending\n",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "draft"
+                ],
+                "summary": "return a drafts for user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetDraftsResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Create draft**\n\nCreate a draft with specifed `text` and `name`. `implementer` is optional query parameter, if not set in default - it's you.\n\n## Params\n### Query\n1. `implementer` - id of user, that implements this draft\n\n## Errors\n### 400 - Bad Request\n1. If `text` or `name` is empty\n",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "draft"
+                ],
+                "summary": "create a draft",
+                "parameters": [
+                    {
+                        "description": "a body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateDraftReq"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "a id of implementer",
+                        "name": "implementer",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateDraftResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/v1/draft/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Return a draft**\n## Params\n### Path\n1. `id` - id of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found `draft` with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n### 403 - Forbiden\n1. If you are not owner of this `draft`\n",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "draft"
+                ],
+                "summary": "return a draft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of draft",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetDraftResp"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Update draft**\n\nUpdate in draft only fields specifeid on body\n\nYou can update nothing but it's important to send empty json object:\n```json\n{\n\n}\n```\n\n## Params\n### Path\n1. `id` - id of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found `draft` with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n2. Try to set `text` or `name` or `implementer` to empty.\n### 403 - Forbiden\n1. If you are not owner of this `draft`\n",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "draft"
+                ],
+                "summary": "update a draft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of draft",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "a body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDraftReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDraftResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Delete draft**\n## Params\n### Path\n1. `id` - id of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found `draft` with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n### 403 - Forbiden\n1. If you are not owner of this `draft`\n",
+                "produces": [
+                    "application/json",
+                    "text/plain"
+                ],
+                "tags": [
+                    "draft"
+                ],
+                "summary": "delete a draft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of draft",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/reports/v1/report_from_draft/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Create a report from draft**\n\nCreate report from specified draft and **delete** it\n\n## Params\n### Path\n1. `id` - id of `draft` report\n\n## Errors\n### 404 - Not Found\n1. If not found `draft` with `id` param.\n### 400 - Bad Request\n1. If `id` param is not valid.\n### 403 - Forbiden\n1. If you are not owner of this `draft`\n",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "create report from draft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of draft",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateReportResp"
+                        }
+                    }
+                }
+            }
+        },
         "/reports/v2/reports": {
             "get": {
                 "security": [
@@ -236,6 +446,37 @@
         }
     },
     "definitions": {
+        "dto.CreateDraftReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateDraftResp": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/dto.GetAssignesResp"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateReportReq": {
             "type": "object",
             "properties": {
@@ -275,6 +516,48 @@
                 },
                 "reporter": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetAssignesResp": {
+            "type": "object",
+            "properties": {
+                "implementer": {
+                    "type": "string"
+                },
+                "reporter": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetDraftResp": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/dto.GetAssignesResp"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetDraftsResp": {
+            "type": "object",
+            "properties": {
+                "drafts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GetDraftResp"
+                    }
                 }
             }
         },
@@ -321,6 +604,43 @@
                 },
                 "totalResult": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateDraftReq": {
+            "type": "object",
+            "properties": {
+                "implementer": {
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "name": {
+                    "type": "string",
+                    "x-nullable": true
+                },
+                "text": {
+                    "type": "string",
+                    "x-nullable": true
+                }
+            }
+        },
+        "dto.UpdateDraftResp": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/dto.GetAssignesResp"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
                 }
             }
         }
