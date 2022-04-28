@@ -59,6 +59,13 @@ func NewServer(
 	).Methods(http.MethodGet)
 
 	r.Handle(
+		"/reports/v1/draft",
+		handlers.CreateDraft(
+			e,
+		),
+	).Methods(http.MethodPost)
+
+	r.Handle(
 		"/reports/v1/draft/{id}",
 		handlers.GetDraft(
 			e,

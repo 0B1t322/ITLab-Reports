@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
-	"github.com/RTUITLab/ITLab-Reports/service/reports"
+
 	derr "github.com/RTUITLab/ITLab-Reports/transport/draft/http/errors"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/clarketm/json"
@@ -28,7 +28,7 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 			err == middlewares.TokenNotValid, err == middlewares.TokenExpired:
 		statusCode = http.StatusUnauthorized
 	// BadRequest 
-	case 	err == derr.DraftIDIsInvalid, errors.Is(err, reports.ErrValidationError):
+	case 	err == derr.DraftIDIsInvalid, errors.Is(err, derr.DraftValidationError):
 		statusCode = http.StatusBadRequest
 	// NotFound
 	case err == derr.DraftNotFound:

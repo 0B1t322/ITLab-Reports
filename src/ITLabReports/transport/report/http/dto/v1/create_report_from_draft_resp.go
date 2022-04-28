@@ -14,7 +14,7 @@ func EncodeCreateReportFromDraftResp(
 	w http.ResponseWriter,
 	resp *CreateReportFromDraftResp,
 ) error {
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
 }

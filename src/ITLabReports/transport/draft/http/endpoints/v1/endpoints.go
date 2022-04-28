@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/RTUITLab/ITLab-Reports/pkg/endpoint"
+	pkgerr "github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/dto/v1"
-	"github.com/RTUITLab/ITLab-Reports/transport/report"
 	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/errors"
+	"github.com/RTUITLab/ITLab-Reports/transport/report"
 )
 
 type GetDraft = endpoint.Endpoint[*dto.GetDraftReq, *dto.GetDraftResp]
@@ -71,7 +72,9 @@ func makeCreateDraft(
 			ctx,
 			req.ToEndpointReq(),
 		)
-		if err != nil {
+		if pkgerr.Is(err, reports.ErrValidationError) {
+			return nil, pkgerr.Wrap(pkgerr.Unwrap(err), errors.DraftValidationError)
+		} else if err != nil {
 			return nil, err
 		}
 

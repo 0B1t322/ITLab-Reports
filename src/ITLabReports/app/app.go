@@ -57,7 +57,7 @@ func New(cfg *config.Config) *App {
 }
 
 func (a *App) BuildDraftHTTP() (DraftEndpoints, error) {
-	s, err := a.BuildReportService()
+	s, err := a.BuildDraftService()
 	if err != nil {
 		return DraftEndpoints{}, err
 	}

@@ -27,5 +27,10 @@ func EncodeGetDraftsResp(
 	w http.ResponseWriter,
 	resp *GetDraftsResp,
 ) error {
+	if resp.Drafts == nil {
+		resp.Drafts = []*GetDraftResp{}
+	}
+	
+	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(resp)
 }

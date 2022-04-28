@@ -7,8 +7,9 @@ import (
 
 func (a *App) BuildReportService() (reports.Service ,error) {
 	service, err := reportservice.New(
-		reportservice.WithMongoRepository(
+		reportservice.WithMongoRepositoryAndCollectionName(
 			a.cfg.MongoDB.URI,
+			"reports",
 		),
 	)
 	if err != nil {

@@ -6,4 +6,6 @@ var (
 	DraftNotFound = errors.New("Draft not found")
 
 	DraftIDIsInvalid = errors.New("Draft id is invalid")
+
+	DraftValidationError = errors.New("Draft is not valid")
 )
