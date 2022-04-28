@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	agragate "github.com/RTUITLab/ITLab-Reports/aggragate/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
@@ -19,19 +18,7 @@ var (
 	EmployeeCantBeEmpty = errors.New("Employee can't be empty")
 )
 
-type DraftService interface {
-	IsDraftNotFoundErr(error) bool
-	IsDraftIdNotValidErr(error) bool
-	// Should throws errors
-	// 	Draft not found
-	// 	Draft id is invalid
-	GetDraft(ctx context.Context, id string) (*agragate.Report, error)
-
-	// Should throws errors
-	// 	Draft not found
-	// 	Draft id is invalid
-	DeleteDraft(ctx context.Context, id string) error
-}
+type DraftService = endpoints.DraftService
 
 type serverOptions struct {
 	auther       middlewares.Auther
@@ -69,12 +56,21 @@ func NewServer(
 	ends report.Endpoints,
 	opts ...ServerOptions,
 ) (endpoints.Endpoints) {
-	e := endpoints.NewEndpoints(ends)
-
 	s := &serverOptions{}
 
 	for _, opt := range opts {
 		opt(s)
+	}
+	
+	e := endpoints.NewEndpoints(ends)
+
+	if s.draftService != nil {
+		r.Handle(
+			"/reports/v1/reports_from_draft/{id}",
+			CreateReportFromDraftHandler(
+				endpoints.NewDraftServiceEndpoints(s.draftService, e),
+			),
+		)
 	}
 
 	e = BuildMiddlewares(e, s)

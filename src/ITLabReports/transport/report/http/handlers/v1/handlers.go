@@ -153,3 +153,20 @@ func CreateReports(
 		),
 	)
 }
+
+
+func CreateReportFromDraftHandler(
+	e DraftServiceEndpoints,
+) http.Handler {
+	return genhttp.NewServer(
+		e.CreateReportFromDraft,
+		dto.DecodeCreateReportFromDraftReq,
+		dto.EncodeCreateReportResp,
+		kithttp.ServerBefore(
+			serverbefore.TokenFromReq,
+		),
+		kithttp.ServerErrorEncoder(
+			errenc.EncodeError,
+		),
+	)
+}

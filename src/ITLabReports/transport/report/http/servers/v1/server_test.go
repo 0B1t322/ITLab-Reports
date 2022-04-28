@@ -7,11 +7,16 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/config"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/service/reports/reportservice"
+	ddto "github.com/RTUITLab/ITLab-Reports/transport/draft/http/dto/v1"
+	dends "github.com/RTUITLab/ITLab-Reports/transport/draft/http/endpoints/v1"
+	derr "github.com/RTUITLab/ITLab-Reports/transport/draft/http/errors"
+	dserv "github.com/RTUITLab/ITLab-Reports/transport/draft/http/servers/v1"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	mcontext "github.com/RTUITLab/ITLab-Reports/transport/middlewares/context"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v1"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v1"
+	rerrs "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/servers/v1"
 	"github.com/golang-jwt/jwt/v4"
@@ -23,6 +28,33 @@ func TestFunc_Server(t *testing.T) {
 	cfg := config.GetConfigFrom(
 		"./../../../../../.env",
 	)
+
+	auth := middlewares.NewTestAuth(
+		middlewares.WithAdminRole("reports.admin"),
+		middlewares.WithUserRole("reports.user"),
+		middlewares.WithSuperAdminRole("admin"),
+		middlewares.WithRoleClaim("roles"),
+	)
+
+	// init draft ------
+	draftS, err := reportservice.New(
+		reportservice.WithMongoRepositoryAndCollectionName(cfg.MongoDB.TestURI, "drafts"),
+	)
+	require.NoError(t, err)
+
+	draftEnds := dends.NewEndpoints(
+		report.MakeEndpoints(draftS),
+	)
+
+	draftHttp := dserv.BuildMiddlewares(
+		draftEnds,
+		dserv.MergeServerOptions(
+			dserv.WithAuther(
+				auth,
+			),
+		),
+	)
+	// init draft ------
 
 	s, err := reportservice.New(
 		reportservice.WithMongoRepository(cfg.MongoDB.TestURI),
@@ -37,14 +69,16 @@ func TestFunc_Server(t *testing.T) {
 		httpEnds,
 		servers.MergeServerOptions(
 			servers.WithAuther(
-				middlewares.NewTestAuth(
-					middlewares.WithAdminRole("reports.admin"),
-					middlewares.WithUserRole("reports.user"),
-					middlewares.WithSuperAdminRole("admin"),
-					middlewares.WithRoleClaim("roles"),
-				),
+				auth,
 			),
 		),
+	)
+
+	createReportFromDraftEndpoint := endpoints.NewDraftServiceEndpoints(
+		dends.ToDraftService(
+			draftHttp,
+		),
+		httpEnds,
 	)
 
 	user1Token, err := jwt.NewWithClaims(
@@ -563,6 +597,159 @@ func TestFunc_Server(t *testing.T) {
 								"user_2_id",
 								req.Implementer,
 							)
+						},
+					)
+				},
+			)
+		},
+	)
+
+	t.Run(
+		"CreateReportFromDraft",
+		func(t *testing.T) {
+			t.Run(
+				"Failure",
+				func(t *testing.T) {
+					t.Run(
+						"Role not found",
+						func(t *testing.T) {
+							mctx := mcontext.New(context.Background())
+							mctx.SetToken(notAuthUser)
+
+							resp, err := createReportFromDraftEndpoint.CreateReportFromDraft(
+								mctx,
+								&dto.CreateReportFromDraftReq{},
+							)
+							require.ErrorIs(t, err, middlewares.RoleNotFound)
+
+							require.Nil(t, resp)
+						},
+					)
+
+					t.Run(
+						"DraftNotFoundOrInvalidID",
+						func(t *testing.T) {
+							mctx := mcontext.New(context.Background())
+							mctx.SetToken(user1Token)
+		
+							resp, err := createReportFromDraftEndpoint.CreateReportFromDraft(
+								mctx,
+								&dto.CreateReportFromDraftReq{},
+							)
+							require.Condition(
+								t,
+								func() (success bool) {
+									return err == rerrs.DraftIdNotValud || err == rerrs.DraftNotFound
+								},
+							)
+		
+							require.Nil(t, resp)
+						},
+					)
+		
+					t.Run(
+						"TryCreateReportFromDraftOfAnotherUser",
+						func(t *testing.T) {
+							mctx := mcontext.New(context.Background())
+							mctx.SetToken(user1Token)
+							resp, err := draftHttp.CreateDraft(
+								mctx,
+								&ddto.CreateDraftReq{
+									Name: "some",
+									Text: "some",
+									Implementor: "some",
+								},
+							)
+							require.NoError(t, err)
+		
+							id := resp.ID
+							mctx = mcontext.New(context.Background())
+							mctx.SetToken(user2Token)
+		
+							{
+								resp, err := createReportFromDraftEndpoint.CreateReportFromDraft(
+									mctx,
+									&dto.CreateReportFromDraftReq{
+										ID: id,
+									},
+								)
+								require.ErrorIs(t, err, middlewares.YouAreNotOwner)
+		
+								require.Nil(t, resp)
+							}
+						},
+					)
+				},
+			)
+
+			t.Run(
+				"Success",
+				func(t *testing.T) {
+					t.Run(
+						"CreateReportFromDraft",
+						func(t *testing.T) {
+							mctx := mcontext.New(context.Background())
+							mctx.SetToken(user1Token)
+							createdDraft, err := draftHttp.CreateDraft(
+								mctx,
+								&ddto.CreateDraftReq{
+									Name: "some",
+									Text: "some",
+									Implementor: "some",
+								},
+							)
+							require.NoError(t, err)
+
+							createdReport, err := createReportFromDraftEndpoint.CreateReportFromDraft(
+								mctx,
+								&dto.CreateReportFromDraftReq{
+									ID: createdDraft.ID,
+								},
+							)
+							require.NoError(t, err)
+
+							require.Equal(
+								t, 
+								&dto.CreateReportResp{
+									ID:       createdReport.ID,
+									Name:     createdDraft.Name,
+									Text:     createdDraft.Text,
+									Date:     createdReport.Date,
+									Assignes: createdDraft.Assignes,
+								},
+								createdReport,
+							)
+
+							// Check that report can be getted
+							{
+								getReport, err := httpEnds.GetReport(
+									mctx,
+									&dto.GetReportReq{
+										ID: createdReport.ID,
+									},
+								)
+								require.NoError(t, err)
+
+								require.Equal(
+									t,
+									dto.GetReportResp(*createdReport),
+									*getReport,
+								)
+							}
+
+							// Check draft is deleted
+							{
+								getDraft, err := draftHttp.GetDraft(
+									mctx,
+									&ddto.GetDraftReq{
+										ID: createdDraft.ID,
+									},
+								)
+								require.ErrorIs(t, err, derr.DraftNotFound)
+
+								require.Nil(t, getDraft)
+							}
+
 						},
 					)
 				},
