@@ -6,7 +6,6 @@ import (
 
 	"github.com/RTUITLab/ITLab-Reports/config"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
-	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/service/reports/reportservice"
 	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/dto/v1"
 	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/endpoints/v1"
@@ -145,7 +144,7 @@ func TestFunc_Server(t *testing.T) {
 							require.Condition(
 								t,
 								func() (success bool) {
-									return errors.Is(err, reports.ErrValidationError)
+									return errors.Is(err, derr.DraftValidationError)
 								},
 							)
 						},
