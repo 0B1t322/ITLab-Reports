@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	genhttp "github.com/RTUITLab/ITLab-Reports/pkg/transport/http"
+	"github.com/RTUITLab/ITLab-Reports/transport/http/options/serverbefore"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v1"
 	. "github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v1"
-	"github.com/RTUITLab/ITLab-Reports/transport/report/http/options/serverbefore"
 	errenc "github.com/RTUITLab/ITLab-Reports/transport/report/http/options/servererrorencoder"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
@@ -17,7 +17,7 @@ import (
 // @Tags reports
 //
 // @Summary return report
-// 
+//
 // @Description.markdown get_report
 //
 // @Router /reports/{id} [get]
@@ -58,9 +58,9 @@ func GetReport(
 // @Security ApiKeyAuth
 //
 // @Param dateBegin query string false "begin date of reports"
-// 
+//
 // @Param dateEnd query string false "end date of reports"
-// 
+//
 // @Param employee path string true "employee user id"
 //
 // @Produce json
@@ -87,7 +87,7 @@ func GetReportsForEmployee(
 // @Tags reports
 //
 // @Summary get report list
-// 
+//
 // @Description.markdown get_reports_v1
 //
 // @Router /reports [get]
@@ -122,7 +122,7 @@ func GetReports(
 // @Summary create report
 //
 // @Description create report
-// 
+//
 // @Description.markdown create_report_v1
 //
 // @Router /reports [post]

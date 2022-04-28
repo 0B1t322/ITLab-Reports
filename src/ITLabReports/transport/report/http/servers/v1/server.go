@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	agragate "github.com/RTUITLab/ITLab-Reports/aggragate/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
@@ -18,8 +19,23 @@ var (
 	EmployeeCantBeEmpty = errors.New("Employee can't be empty")
 )
 
-type serverOptions struct{
-	auther middlewares.Auther
+type DraftService interface {
+	IsDraftNotFoundErr(error) bool
+	IsDraftIdNotValidErr(error) bool
+	// Should throws errors
+	// 	Draft not found
+	// 	Draft id is invalid
+	GetDraft(ctx context.Context, id string) (*agragate.Report, error)
+
+	// Should throws errors
+	// 	Draft not found
+	// 	Draft id is invalid
+	DeleteDraft(ctx context.Context, id string) error
+}
+
+type serverOptions struct {
+	auther       middlewares.Auther
+	draftService DraftService
 }
 
 type ServerOptions func(s *serverOptions)
@@ -27,6 +43,12 @@ type ServerOptions func(s *serverOptions)
 func WithAuther(a middlewares.Auther) ServerOptions {
 	return func(s *serverOptions) {
 		s.auther = a
+	}
+}
+
+func WithDraftService(service DraftService) ServerOptions {
+	return func(s *serverOptions) {
+		s.draftService = service
 	}
 }
 
@@ -46,9 +68,9 @@ func NewServer(
 	r *mux.Router,
 	ends report.Endpoints,
 	opts ...ServerOptions,
-) {
+) (endpoints.Endpoints) {
 	e := endpoints.NewEndpoints(ends)
-	
+
 	s := &serverOptions{}
 
 	for _, opt := range opts {
@@ -61,12 +83,12 @@ func NewServer(
 		"/reports",
 		GetReports(e),
 	).Methods(http.MethodGet)
-	
+
 	r.Handle(
 		"/reports/employee/{employee}",
 		GetReportsForEmployee(e),
 	).Methods(http.MethodGet)
-	
+
 	r.Handle(
 		"/reports/{id}",
 		GetReport(e),
@@ -76,6 +98,8 @@ func NewServer(
 		"/reports",
 		CreateReports(e),
 	).Methods(http.MethodPost)
+
+	return e
 }
 
 func BuildMiddlewares(

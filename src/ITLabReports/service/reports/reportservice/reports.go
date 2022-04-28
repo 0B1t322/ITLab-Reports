@@ -46,6 +46,25 @@ func WithMongoRepository(connString string) ServiceConfiguration {
 	}
 }
 
+func WithMongoRepositoryAndCollectionName(
+	connString string,
+	collectionName string,
+) ServiceConfiguration {
+	return func(rp *ReportService) error {
+		repo, err := mongo.New(
+			context.Background(),
+			connString,
+			mongo.WithCollectionName(collectionName),
+		)
+		if err != nil {
+			return err
+		}
+
+		rp.ReportRepository = repo
+		return nil
+	}
+}
+
 func WithMongoRepositoryWithClient(
 	connString string,
 	client *m.Client,

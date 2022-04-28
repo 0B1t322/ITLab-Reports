@@ -8,7 +8,7 @@ import (
 
 	genhttp "github.com/RTUITLab/ITLab-Reports/pkg/transport/http"
 
-	"github.com/RTUITLab/ITLab-Reports/transport/report/http/options/serverbefore"
+	"github.com/RTUITLab/ITLab-Reports/transport/http/options/serverbefore"
 	errenc "github.com/RTUITLab/ITLab-Reports/transport/report/http/options/servererrorencoder"
 	kithttp "github.com/go-kit/kit/transport/http"
 )

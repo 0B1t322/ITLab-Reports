@@ -56,7 +56,20 @@ func New(cfg *config.Config) *App {
 	return app
 }
 
-func (a *App) BuildReportsHTTP() error {
+func (a *App) BuildDraftHTTP() (DraftEndpoints, error) {
+	s, err := a.BuildReportService()
+	if err != nil {
+		return DraftEndpoints{}, err
+	}
+
+	e := a.BuildReportsEndpoints(s)
+
+	draftEnds := a.BuildDraftsHTTPV1(e)
+
+	return draftEnds, nil
+}
+
+func (a *App) BuildReportsHTTP(d DraftEndpoints) error {
 	s, err := a.BuildReportService()
 	if err != nil {
 		return err
@@ -64,13 +77,18 @@ func (a *App) BuildReportsHTTP() error {
 
 	e := a.BuildReportsEndpoints(s)
 
-	a.BuildReportsHTTPV1(e)
+	a.BuildReportsHTTPV1(e, ToDraftService(d))
 	a.BuildReportsHTTPV2(e)
 	return nil
 }
 
 func (a *App) BuildHTTP() error {
-	if err := a.BuildReportsHTTP(); err != nil {
+	draft, err := a.BuildDraftHTTP()
+	if err != nil {
+		return err
+	}
+
+	if err := a.BuildReportsHTTP(draft); err != nil {
 		return err
 	}
 

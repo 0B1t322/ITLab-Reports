@@ -2,13 +2,12 @@ package servererrorencoder
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/RTUITLab/ITLab-Reports/service/reports"
+	derr "github.com/RTUITLab/ITLab-Reports/transport/draft/http/errors"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
-	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	"github.com/clarketm/json"
 	"github.com/sirupsen/logrus"
 )
@@ -22,27 +21,23 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 
 	switch {
 	// Forbidden errors
-	case err == middlewares.NotAdmin, err == middlewares.NotSuperAdmin:
+	case err == middlewares.NotAdmin, err == middlewares.NotSuperAdmin, err == middlewares.YouAreNotOwner:
 		statusCode = http.StatusForbidden
-	case err == middlewares.YouAreNotOwner:
-		statusCode = http.StatusForbidden
-		err = fmt.Errorf("You are not owner of this draft")
 	// Unauth
 	case 	err == middlewares.FailedToParseToken, err == middlewares.RoleNotFound, 
 			err == middlewares.TokenNotValid, err == middlewares.TokenExpired:
 		statusCode = http.StatusUnauthorized
 	// BadRequest 
-	case 	err == reports.ErrReportIDNotValid, errors.Is(err, reports.ErrValidationError), 
-			errors.Is(err, serr.ValidationError):
+	case 	err == derr.DraftIDIsInvalid, errors.Is(err, reports.ErrValidationError):
 		statusCode = http.StatusBadRequest
 	// NotFound
-	case err == reports.ErrReportNotFound:
+	case err == derr.DraftNotFound:
 		statusCode = http.StatusNotFound
 	default:
 		statusCode = http.StatusInternalServerError
 		logrus.WithFields(
 			logrus.Fields{
-				"from": "reports",
+				"from": "draft",
 				"err": err,
 			},
 		).Error("")
