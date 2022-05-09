@@ -377,7 +377,8 @@ func (m *MongoRepository) GetReports(
 		if err != nil {
 			return nil, err
 		}
-
+		defer cur.Close(ctx)
+		
 		if err := cur.All(ctx, &mgReports); err != nil {
 			return nil, err
 		}

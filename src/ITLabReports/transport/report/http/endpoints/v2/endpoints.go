@@ -51,7 +51,6 @@ func makeGetReportsEndpoint(
 		limit := 0
 		count := len(reports.Reports)
 		totalResult := countReport.Count
-		HasMore := totalResult - int64(count) > 0
 
 		if req.Query.Params.Limit.HasValue() {
 			limit = int(req.Query.Params.Limit.MustGetValue())
@@ -59,6 +58,13 @@ func makeGetReportsEndpoint(
 
 		if req.Query.Params.Offset.HasValue() {
 			offset = int(req.Query.Params.Offset.MustGetValue())
+		}
+
+		HasMore := false
+		{
+			if totalResult - int64(offset) - int64(limit) > 0 {
+				HasMore = true
+			}
 		}
 
 		resp := &dto.GetReportsResp{
