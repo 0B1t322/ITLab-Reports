@@ -112,7 +112,7 @@ func (g *GetReportsQuery) LimitParseSchema() queryparser.ParseSchemaItem {
 			if len(values) > 0 {
 				return nil
 			}
-			return fmt.Errorf("offset not set")
+			return fmt.Errorf("limit not set")
 		},
 		TypeMapFunc: func(field string, values []string) (interface{}, error) {
 			strLimit := values[0]

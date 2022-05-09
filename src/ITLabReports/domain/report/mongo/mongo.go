@@ -333,7 +333,7 @@ func (m *MongoRepository) BuildFindOptions(
 	}
 
 	if params.Offset.HasValue() {
-		opt.SetLimit(params.Offset.MustGetValue())
+		opt.SetSkip(params.Offset.MustGetValue())
 	}
 
 	return opt
