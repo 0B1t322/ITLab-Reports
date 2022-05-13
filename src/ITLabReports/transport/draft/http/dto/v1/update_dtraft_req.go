@@ -18,6 +18,16 @@ type UpdateDraftReq struct {
 	Implementer string `json:"implementer" swaggertype:"string" extensions:"x-nullable"`
 }
 
+func (u *UpdateDraftReq) GetIds() []string {
+	var ids []string
+	{
+		if u.Implementer != "" {
+			ids = append(ids, u.Implementer)
+		}
+	}
+	return ids
+}
+
 func (u *UpdateDraftReq) GetID() string {
 	return u.ID
 }

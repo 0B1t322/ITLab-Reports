@@ -23,6 +23,7 @@ type DraftService = endpoints.DraftService
 type serverOptions struct {
 	auther       middlewares.Auther
 	draftService DraftService
+	idCheker     middlewares.IdChecker
 }
 
 type ServerOptions func(s *serverOptions)
@@ -36,6 +37,12 @@ func WithAuther(a middlewares.Auther) ServerOptions {
 func WithDraftService(service DraftService) ServerOptions {
 	return func(s *serverOptions) {
 		s.draftService = service
+	}
+}
+
+func WithIdChecker(checker middlewares.IdChecker) ServerOptions {
+	return func(s *serverOptions) {
+		s.idCheker = checker
 	}
 }
 
@@ -55,13 +62,13 @@ func NewServer(
 	r *mux.Router,
 	ends report.Endpoints,
 	opts ...ServerOptions,
-) (endpoints.Endpoints) {
+) endpoints.Endpoints {
 	s := &serverOptions{}
 
 	for _, opt := range opts {
 		opt(s)
 	}
-	
+
 	e := endpoints.NewEndpoints(ends)
 
 	if s.draftService != nil {
@@ -115,6 +122,7 @@ func BuildMiddlewares(
 		middlewares.Auth[*dto.CreateReportReq, *dto.CreateReportResp](opt.auther),
 		middlewares.SetReporter[*dto.CreateReportReq, *dto.CreateReportResp](),
 		middlewares.SetImplementerIfEmpty[*dto.CreateReportReq, *dto.CreateReportResp](),
+		middlewares.CheckIds[*dto.CreateReportReq, *dto.CreateReportResp](opt.idCheker),
 	)
 
 	e.GetReportsForEmployee.AddCustomMiddlewares(

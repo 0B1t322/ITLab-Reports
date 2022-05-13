@@ -14,7 +14,8 @@ import (
 )
 
 type serverOptions struct {
-	auther middlewares.Auther
+	auther    middlewares.Auther
+	idChecker middlewares.IdChecker
 }
 
 type ServerOptions func(s *serverOptions)
@@ -22,6 +23,12 @@ type ServerOptions func(s *serverOptions)
 func WithAuther(a middlewares.Auther) ServerOptions {
 	return func(s *serverOptions) {
 		s.auther = a
+	}
+}
+
+func WithIdChecker(checker middlewares.IdChecker) ServerOptions {
+	return func(s *serverOptions) {
+		s.idChecker = checker
 	}
 }
 
@@ -98,6 +105,8 @@ func BuildMiddlewares(
 	e.CreateDraft.AddCustomMiddlewares(
 		middlewares.Auth[*dto.CreateDraftReq, *dto.CreateDraftResp](opt.auther),
 		middlewares.SetReporter[*dto.CreateDraftReq, *dto.CreateDraftResp](),
+		middlewares.SetImplementerIfEmpty[*dto.CreateDraftReq, *dto.CreateDraftResp](),
+		middlewares.CheckIds[*dto.CreateDraftReq, *dto.CreateDraftResp](opt.idChecker),
 	)
 
 	e.DeleteDraft.AddCustomMiddlewares(
@@ -113,6 +122,7 @@ func BuildMiddlewares(
 	e.UpdateDraft.AddCustomMiddlewares(
 		middlewares.Auth[*dto.UpdateDraftReq, *dto.UpdateDraftResp](opt.auther),
 		middlewares.UserIsOwner[*dto.UpdateDraftReq, *dto.UpdateDraftResp](e),
+		middlewares.CheckIds[*dto.UpdateDraftReq, *dto.UpdateDraftResp](opt.idChecker),
 	)
 
 	e.GetDrafts.AddCustomMiddlewares(

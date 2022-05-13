@@ -14,10 +14,17 @@ import (
 )
 
 type CreateDraftReq struct {
-	Name string	`json:"name,omitempty"`
-	Text string `json:"text,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Text        string `json:"text,omitempty"`
 	Implementor string `json:"-" swaggeringore:"true"`
-	Reporter string `json:"-" swaggeringore:"true"`
+	Reporter    string `json:"-" swaggeringore:"true"`
+}
+
+func (c *CreateDraftReq) GetIds() []string {
+	return []string {
+		c.Reporter,
+		c.Implementor,
+	}
 }
 
 func (c *CreateDraftReq) SetReporter(r string) {
@@ -36,7 +43,7 @@ func (c *CreateDraftReq) ToEndpointReq() *reqresp.CreateReportReq {
 	if c.Implementor == "" {
 		c.Implementor = c.Reporter
 	}
-	
+
 	rep := &report.Report{
 		Report: &entreport.Report{
 			Name: c.Name,
@@ -44,7 +51,7 @@ func (c *CreateDraftReq) ToEndpointReq() *reqresp.CreateReportReq {
 			Date: time.Now().UTC().Round(time.Millisecond),
 		},
 		Assignees: &entassignees.Assignees{
-			Reporter: c.Reporter,
+			Reporter:    c.Reporter,
 			Implementer: c.Implementor,
 		},
 	}

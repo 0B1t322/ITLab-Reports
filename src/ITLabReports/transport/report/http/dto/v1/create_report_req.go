@@ -20,6 +20,13 @@ type CreateReportReq struct {
 	Reporter string `json:"-" swaggeringore:"true"`
 }
 
+func (c *CreateReportReq) GetIds() []string {
+	return []string{
+		c.Reporter,
+		c.Implementor,
+	}
+}
+
 func (c *CreateReportReq) SetReporter(r string) {
 	c.Reporter = r
 }
