@@ -2,10 +2,13 @@ package servers_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/RTUITLab/ITLab-Reports/config"
+	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/toidchecker"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
+	"github.com/RTUITLab/ITLab-Reports/service/idvalidator"
 	"github.com/RTUITLab/ITLab-Reports/service/reports/reportservice"
 	ddto "github.com/RTUITLab/ITLab-Reports/transport/draft/http/dto/v1"
 	dends "github.com/RTUITLab/ITLab-Reports/transport/draft/http/endpoints/v1"
@@ -23,6 +26,20 @@ import (
 
 	"github.com/stretchr/testify/require"
 )
+
+type IdValidatorWithSomeFail struct{}
+func(*IdValidatorWithSomeFail) ValidateIds(ctx context.Context, token string, ids []string) error {
+	for _, id := range ids {
+		if id == "failed" {
+			return fmt.Errorf("Failed error")
+		} else if id == "invalid_id" {
+			return errors.Wrap(fmt.Errorf("invalid_id"), idvalidator.ErrIdInvalid)
+		}
+	}
+	return nil
+}
+
+// TODO test for validate id
 
 func TestFunc_Server(t *testing.T) {
 	cfg := config.GetConfigFrom(
@@ -52,6 +69,13 @@ func TestFunc_Server(t *testing.T) {
 			dserv.WithAuther(
 				auth,
 			),
+			dserv.WithIdChecker(
+				toidchecker.ToIdChecker(
+					idvalidator.New(
+						&IdValidatorWithSomeFail{},
+					),
+				),
+			),
 		),
 	)
 	// init draft ------
@@ -70,6 +94,13 @@ func TestFunc_Server(t *testing.T) {
 		servers.MergeServerOptions(
 			servers.WithAuther(
 				auth,
+			),
+			servers.WithIdChecker(
+				toidchecker.ToIdChecker(
+					idvalidator.New(
+						&IdValidatorWithSomeFail{},
+					),
+				),
 			),
 		),
 	)

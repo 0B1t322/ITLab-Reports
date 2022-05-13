@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrIdInvalid = errors.New("Id is invalid")
+	ErrIdInvalid          = errors.New("Id is invalid")
 	ErrFailedToValidateId = errors.New("Failed to validate")
 )
 
@@ -36,7 +36,7 @@ func (s *Service) CheckUserIds(
 	ctx context.Context,
 	token string,
 	ids []string,
-) (error) {
+) error {
 	err := s.idValidator.ValidateIds(ctx, token, ids)
 	if errors.Is(err, ErrIdInvalid) {
 		return err
