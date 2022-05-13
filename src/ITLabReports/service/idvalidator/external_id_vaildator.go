@@ -10,7 +10,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 )
 
-type idValidator struct {
+type externalRestIdValidator struct {
 	baseUrl string
 
 	client *http.Client
@@ -20,7 +20,7 @@ func ExternalRestIDValidator(
 	baseUrl string,
 	client *http.Client,
 ) IdsValidator {
-	v := &idValidator{
+	v := &externalRestIdValidator{
 		baseUrl: baseUrl,
 	}
 
@@ -33,7 +33,7 @@ func ExternalRestIDValidator(
 	return v
 }
 
-func (s *idValidator) ValidateIds(
+func (s *externalRestIdValidator) ValidateIds(
 	ctx context.Context,
 	token string,
 	ids []string,
