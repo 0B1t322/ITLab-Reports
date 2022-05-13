@@ -27,10 +27,14 @@ type UsererContext interface {
 type TokenerContext interface {
 	// Return token if have
 	// if not return error
-	GetToken() (string, error)
+	GetTokenContext
 
 	// set token
 	SetToken(string)
+}
+
+type GetTokenContext interface {
+	GetToken() (string, error)
 }
 
 type middlewareContext struct {
