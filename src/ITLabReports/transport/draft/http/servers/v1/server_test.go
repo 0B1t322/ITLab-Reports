@@ -33,8 +33,6 @@ func(*IdValidatorWithSomeFail) ValidateIds(ctx context.Context, token string, id
 	return nil
 }
 
-// TODO test for validate id
-
 func TestFunc_Server(t *testing.T) {
 	cfg := config.GetConfigFrom(
 		"./../../../../../.env",
@@ -153,22 +151,80 @@ func TestFunc_Server(t *testing.T) {
 					t.Run(
 						"ValidationError",
 						func(t *testing.T) {
-							mctx := mcontext.New(context.Background())
-							mctx.SetToken(user1Token)
+							t.Run(
+								"EmptyFields",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(user1Token)
 
-							_, err := httpEnds.CreateDraft(
-								mctx,
-								&dto.CreateDraftReq{
-									Name: "",
-									Text: "",
-									Implementor: "implementer",
-									Reporter: "reporter",
+									_, err := httpEnds.CreateDraft(
+										mctx,
+										&dto.CreateDraftReq{
+											Name: "",
+											Text: "",
+											Implementor: "implementer",
+											Reporter: "reporter",
+										},
+									)
+									require.Condition(
+										t,
+										func() (success bool) {
+											return errors.Is(err, derr.DraftValidationError)
+										},
+									)
 								},
 							)
-							require.Condition(
-								t,
-								func() (success bool) {
-									return errors.Is(err, derr.DraftValidationError)
+
+							t.Run(
+								"InvalidId",
+								func(t *testing.T) {
+									t.Run(
+										"Implementer",
+										func(t *testing.T) {
+											mctx := mcontext.New(context.Background())
+											mctx.SetToken(user1Token)
+
+											_, err := httpEnds.CreateDraft(
+												mctx,
+												&dto.CreateDraftReq{
+													Name: "some_name",
+													Text: "some_text",
+													Implementor: "invalid_id",
+													Reporter: "some",
+												},
+											)
+											require.Condition(
+												t,
+												func() (success bool) {
+													return errors.Is(err, middlewares.ErrIncorectId)
+												},
+											)
+										},
+									)
+								},
+							)
+
+							t.Run(
+								"Failed to validate id",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(user1Token)
+
+									_, err := httpEnds.CreateDraft(
+										mctx,
+										&dto.CreateDraftReq{
+											Name: "some_name",
+											Text: "some_text",
+											Implementor: "failed",
+											Reporter: "some",
+										},
+									)
+									require.Condition(
+										t,
+										func() (success bool) {
+											return errors.Is(err, middlewares.ErrFaieldToValidateId)
+										},
+									)
 								},
 							)
 						},
@@ -498,6 +554,40 @@ func TestFunc_Server(t *testing.T) {
 							require.ErrorIs(t, err, middlewares.YouAreNotOwner)
 		
 							require.Nil(t, get)
+						},
+					)
+
+					t.Run(
+						"InvalidId",
+						func(t *testing.T) {
+							ctx := mcontext.New(context.Background())
+							ctx.SetToken(user1Token)
+		
+							resp, err := httpEnds.CreateDraft(
+								ctx,
+								&dto.CreateDraftReq{
+									Name: "some_name",
+									Text: "somte_text",
+									Implementor: "implementer",
+									Reporter: "reporter",
+								},
+							)
+							require.NoError(t, err)
+							
+
+							_, err = httpEnds.UpdateDraft(
+								ctx,
+								&dto.UpdateDraftReq{
+									ID: resp.ID,
+									Implementer: "invalid_id",
+								},
+							)
+							require.Condition(
+								t,
+								func() (success bool) {
+									return errors.Is(err, middlewares.ErrIncorectId)
+								},
+							)
 						},
 					)
 				},

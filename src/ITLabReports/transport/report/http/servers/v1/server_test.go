@@ -39,8 +39,6 @@ func(*IdValidatorWithSomeFail) ValidateIds(ctx context.Context, token string, id
 	return nil
 }
 
-// TODO test for validate id
-
 func TestFunc_Server(t *testing.T) {
 	cfg := config.GetConfigFrom(
 		"./../../../../../.env",
@@ -316,6 +314,63 @@ func TestFunc_Server(t *testing.T) {
 							require.Error(t, err)
 
 							require.Nil(t, resp)
+						},
+					)
+
+					t.Run(
+						"InvalidId",
+						func(t *testing.T) {
+							t.Run(
+								"Implementer",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(user1Token)
+
+									reportName := "some_name"
+
+									_, err := httpEnds.CreateReport(
+										mctx,
+										&dto.CreateReportReq{
+											Name: &reportName,
+											Text: "some_text",
+											Implementor: "invalid_id",
+											Reporter: "some",
+										},
+									)
+									require.Condition(
+										t,
+										func() (success bool) {
+											return errors.Is(err, middlewares.ErrIncorectId)
+										},
+									)
+								},
+							)
+						},
+					)
+
+					t.Run(
+						"Failed to validate id",
+						func(t *testing.T) {
+							mctx := mcontext.New(context.Background())
+							mctx.SetToken(user1Token)
+
+							reportName := "some_name"
+
+							_, err := httpEnds.CreateReport(
+								mctx,
+								&dto.CreateReportReq{
+									Name: &reportName,
+									Text: "some_text",
+									Implementor: "failed",
+									Reporter: "some",
+								},
+							)
+							require.Condition(
+								t,
+								func() (success bool) {
+									return errors.Is(err, middlewares.ErrFaieldToValidateId)
+								},
+							)
 						},
 					)
 				},

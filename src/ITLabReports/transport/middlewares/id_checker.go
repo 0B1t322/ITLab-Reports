@@ -43,12 +43,12 @@ func CheckIds[Req ReqWithCheckabeIds, Resp any](
 			if err != nil {
 				return *new(Resp), TokenNotValid
 			}
-			
+
 			ids := request.GetIds()
 			if len(ids) > 0 {
 				err = checker.CheckIds(token, ids)
 				if checker.IsIncorrectIdError(err) {
-					return *new(Resp), errors.Wrap(fmt.Errorf("%w", checker.GetIncorrectId(err)), ErrIncorectId)
+					return *new(Resp), errors.Wrap(fmt.Errorf("%s", checker.GetIncorrectId(err)), ErrIncorectId)
 				} else if err != nil {
 					return *new(Resp), errors.Wrap(err, ErrFaieldToValidateId)
 				}

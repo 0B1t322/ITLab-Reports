@@ -28,11 +28,15 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 			err == middlewares.TokenNotValid, err == middlewares.TokenExpired:
 		statusCode = http.StatusUnauthorized
 	// BadRequest 
-	case 	err == derr.DraftIDIsInvalid, errors.Is(err, derr.DraftValidationError):
+	case 	err == derr.DraftIDIsInvalid, errors.Is(err, derr.DraftValidationError),
+			errors.Is(err, middlewares.ErrIncorectId):
 		statusCode = http.StatusBadRequest
 	// NotFound
 	case err == derr.DraftNotFound:
 		statusCode = http.StatusNotFound
+	// Confilct
+	case errors.Is(err, middlewares.ErrFaieldToValidateId):
+		statusCode = http.StatusConflict
 	default:
 		statusCode = http.StatusInternalServerError
 		logrus.WithFields(
