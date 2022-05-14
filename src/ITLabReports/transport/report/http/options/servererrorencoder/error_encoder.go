@@ -40,6 +40,7 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 	// Confilct
 	case errors.Is(err, middlewares.ErrFaieldToValidateId):
 		statusCode = http.StatusConflict
+		err = errors.Unwrap(err)
 	// NotFound
 	case err == reports.ErrReportNotFound, err == rerr.DraftNotFound:
 		statusCode = http.StatusNotFound

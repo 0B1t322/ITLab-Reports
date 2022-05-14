@@ -59,6 +59,7 @@ func (s *externalRestIdValidator) ValidateIds(
 	}
 
 	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-Type", "application/json")
 	
 	resp, err := s.client.Do(
 		req,

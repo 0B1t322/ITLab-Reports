@@ -41,7 +41,7 @@ func New(cfg *config.Config) *App {
 	app.buildAuthMiddleware()
 
 	// Build idChecker
-
+	app.buildIdChecker()
 
 	return app
 }

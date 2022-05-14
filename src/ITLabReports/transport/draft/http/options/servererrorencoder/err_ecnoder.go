@@ -37,6 +37,7 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 	// Confilct
 	case errors.Is(err, middlewares.ErrFaieldToValidateId):
 		statusCode = http.StatusConflict
+		err = errors.Unwrap(err)
 	default:
 		statusCode = http.StatusInternalServerError
 		logrus.WithFields(
