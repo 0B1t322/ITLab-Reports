@@ -47,6 +47,10 @@ ITLAB_REPORTS_ROLE_ADMIN=admin
 # superadmin role
 # in deafult admin
 ITLAB_REPORTS_ROLE_SUPER_ADMIN=superadmin
+
+# base url for external api
+# in default https://dev.manage.rtuitlab.dev
+ITLAB_REPORTS_APP_ITLAB_URL=https://some_api_baseurl.com
 ```
 
 ## Run locally
