@@ -59,11 +59,11 @@ func (g *GetReportsQuery) DateParseSchema(dateType dateType) queryparser.ParseSc
 			if len(values) > 0 {
 				return nil
 			}
-			return fmt.Errorf("dateBegin not set")
+			return fmt.Errorf("date not set")
 		},
 		TypeMapFunc: func(field string, values []string) (interface{}, error) {
-			dateBeginStr := values[0]
-			dateBegin, err := time.Parse(time.RFC3339Nano, dateBeginStr)
+			dateStr := values[0]
+			date, err := time.Parse(time.RFC3339Nano, dateStr)
 			if err == nil {
 				g.Params.Filter.And = append(
 					g.Params.Filter.And,
@@ -71,7 +71,7 @@ func (g *GetReportsQuery) DateParseSchema(dateType dateType) queryparser.ParseSc
 						GetReportsFilterFields: report.GetReportsFilterFields{
 							Date: &filter.FilterField[string]{
 								Operation: dateType.GetOperation(),
-								Value: dateBegin.Format(time.RFC3339Nano),
+								Value: date.UTC().Format(time.RFC3339Nano),
 							},
 						},
 					},
@@ -195,7 +195,7 @@ func (g *GetReportsQuery) SetMatchField(field string, value string) {
 
 		g.Params.Filter.Date = &filter.FilterField[string] {
 			Operation: filter.EQ,
-			Value: date.Format(time.RFC3339Nano),
+			Value: date.UTC().Format(time.RFC3339Nano),
 		}
 	case "assignees.implementer":
 		g.Params.Filter.Implementer = &filter.FilterField[string] {

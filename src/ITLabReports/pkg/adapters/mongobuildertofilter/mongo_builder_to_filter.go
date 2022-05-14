@@ -26,7 +26,7 @@ func FieldToTime[T filter.FieldType]() FieldMarshaller[T] {
 			return nil
 		}
 
-		return time
+		return time.UTC()
 	}
 }
 
