@@ -18,5 +18,6 @@ func (a *App) BuildDraftsHTTPV1(
 		a.Router,
 		e,
 		servers.WithAuther(a.Auther),
+		servers.WithIdChecker(a.IdChecker),
 	)
 }

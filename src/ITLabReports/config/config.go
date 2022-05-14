@@ -15,6 +15,8 @@ type AppConfig struct {
 	AppPort string `envconfig:"ITLAB_REPORTS_APP_PORT"`
 
 	TestMode bool `envconfig:"ITLAB_REPORTS_APP_TEST_MODE"`
+
+	ITLabURL string `default:"https://dev.manage.rtuitlab.dev" envconfig:"ITLAB_REPORTS_APP_ITLAB_URL"`
 }
 
 type Config struct {

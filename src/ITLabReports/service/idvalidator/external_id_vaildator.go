@@ -16,8 +16,12 @@ type externalRestIdValidator struct {
 	client *http.Client
 }
 
+// ExternalRestIDValidator create id validator that validate by external rest interface
+// 
+// client param can be nil
 func ExternalRestIDValidator(
 	baseUrl string,
+	// Can be nil
 	client *http.Client,
 ) IdsValidator {
 	v := &externalRestIdValidator{

@@ -7,6 +7,8 @@ import (
 
 	"github.com/RTUITLab/ITLab-Reports/config"
 	_ "github.com/RTUITLab/ITLab-Reports/docs"
+	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/toidchecker"
+	"github.com/RTUITLab/ITLab-Reports/service/idvalidator"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -14,8 +16,9 @@ import (
 )
 
 type App struct {
-	Router *mux.Router
-	Auther middlewares.Auther
+	Router    *mux.Router
+	Auther    middlewares.Auther
+	IdChecker middlewares.IdChecker
 
 	cfg *config.Config
 }
@@ -35,25 +38,51 @@ func New(cfg *config.Config) *App {
 	}
 
 	// Build auth middleware
-	if !cfg.App.TestMode {
-		app.Auther = middlewares.NewJWKSAuth(
-			middlewares.WithAdminRole(cfg.Auth.Roles.Admin),
-			middlewares.WithUserRole(cfg.Auth.Roles.User),
-			middlewares.WithSuperAdminRole(cfg.Auth.Roles.SuperAdmin),
-			middlewares.WithJWKSUrl(cfg.Auth.KeyURL),
-			middlewares.WithRoleClaim(cfg.Auth.Audience),
-		)
-	} else {
-		app.Auther = middlewares.NewTestAuth(
-			middlewares.WithAdminRole(cfg.Auth.Roles.Admin),
-			middlewares.WithUserRole(cfg.Auth.Roles.User),
-			middlewares.WithSuperAdminRole(cfg.Auth.Roles.SuperAdmin),
-			middlewares.WithJWKSUrl(cfg.Auth.KeyURL),
-			middlewares.WithRoleClaim(cfg.Auth.Audience),
-		)
-	}
+	app.buildAuthMiddleware()
+
+	// Build idChecker
+
 
 	return app
+}
+
+func (a *App) buildAuthMiddleware() {
+	if !a.cfg.App.TestMode {
+		a.Auther = middlewares.NewJWKSAuth(
+			middlewares.WithAdminRole(a.cfg.Auth.Roles.Admin),
+			middlewares.WithUserRole(a.cfg.Auth.Roles.User),
+			middlewares.WithSuperAdminRole(a.cfg.Auth.Roles.SuperAdmin),
+			middlewares.WithJWKSUrl(a.cfg.Auth.KeyURL),
+			middlewares.WithRoleClaim(a.cfg.Auth.Audience),
+		)
+	} else {
+		a.Auther = middlewares.NewTestAuth(
+			middlewares.WithAdminRole(a.cfg.Auth.Roles.Admin),
+			middlewares.WithUserRole(a.cfg.Auth.Roles.User),
+			middlewares.WithSuperAdminRole(a.cfg.Auth.Roles.SuperAdmin),
+			middlewares.WithJWKSUrl(a.cfg.Auth.KeyURL),
+			middlewares.WithRoleClaim(a.cfg.Auth.Audience),
+		)
+	}
+}
+
+func (a *App) buildIdChecker() {
+	if !a.cfg.App.TestMode {
+		a.IdChecker = toidchecker.ToIdChecker(
+			idvalidator.New(
+				idvalidator.ExternalRestIDValidator(
+					a.cfg.App.ITLabURL,
+					nil, // can be nil
+				),
+			),
+		)
+	} else {
+		a.IdChecker = toidchecker.ToIdChecker(
+			idvalidator.New(
+				idvalidator.AlwaysTrueIdValidator(),
+			),
+		)
+	}
 }
 
 func (a *App) BuildDraftHTTP() (DraftEndpoints, error) {
@@ -104,15 +133,15 @@ func (a *App) StartHTTP() {
 	if err := a.BuildHTTP(); err != nil {
 		log.Panicf("Failed to start application %v", err)
 	}
-	
+
 	log.Infof("Starting Application is port %s", a.cfg.App.AppPort)
 	s := &http.Server{
-		Addr: fmt.Sprintf(":%s", a.cfg.App.AppPort),
-		Handler: a.Router,
-		ReadTimeout: 10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		Addr:           fmt.Sprintf(":%s", a.cfg.App.AppPort),
+		Handler:        a.Router,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		IdleTimeout: 2*time.Second,
+		IdleTimeout:    2 * time.Second,
 	}
 	if err := s.ListenAndServe(); err != nil {
 		log.Panicf("Failed to start application %v", err)

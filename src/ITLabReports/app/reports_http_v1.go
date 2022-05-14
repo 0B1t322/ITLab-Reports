@@ -17,5 +17,6 @@ func (a *App) BuildReportsHTTPV1(
 		e,
 		servers.WithAuther(a.Auther),
 		servers.WithDraftService(draftService),
+		servers.WithIdChecker(a.IdChecker),
 	)
 }
