@@ -62,7 +62,7 @@ func makeGetReportsEndpoint(
 
 		HasMore := false
 		{
-			if totalResult - int64(offset) - int64(limit) > 0 {
+			if limit != 0 && totalResult - int64(offset) - int64(limit) > 0 {
 				HasMore = true
 			}
 		}
