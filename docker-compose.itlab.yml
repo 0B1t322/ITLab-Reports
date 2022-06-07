@@ -3,7 +3,7 @@ version: '3.8'
 services:
   reports-back:
     build:
-      context: ${BACK_REPORTS_CONTEXT:-.}
+      context: ${BACK_REPORTS_CONTEXT:-.}/src/ITLabReports
       dockerfile: Dockerfile-itlab
     depends_on:
       - mongodb
