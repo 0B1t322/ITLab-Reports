@@ -16,8 +16,7 @@
     6.2. `date:value` - find reports whose date is equal passed `value`, date should be in format RFC3339, for example `match=date:2019-10-12T07:20:50.52Z`
     6.3. `assignees.implementer:value` - find reports whose implementer is equal passed `value`, can work only if you are admin, else it will be unset
     6.4. `assignees.reporter:value` - find reports whose reporter is equal passed `value`, can work only if you are admin, else it will be unset
-7. `onlyApproved` - filter reports on their approve state. If true return only reports that approved.
-8. `onlyNotApproved` - filter reports on their approve state. If true return only reports that not approved.
+7. `approvedState` - the state of reports approved. Can be one of: `approved`, `notApproved`, `all`.
 ## Responce fields
 1. `count` - the current count of elements in `items` field.
 2. `items` - the getted reports.

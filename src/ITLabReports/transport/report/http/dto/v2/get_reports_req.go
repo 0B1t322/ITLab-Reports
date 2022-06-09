@@ -16,12 +16,18 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
 )
 
+type ApprovedState string
+
+const (
+	Approved    ApprovedState = "approved"
+	NotApproved ApprovedState = "notApproved"
+	All         ApprovedState = "all"
+)
+
 type GetReportsQuery struct {
 	Params *report.GetReportsParams
 
-	OnlyApproved bool
-
-	OnlyNotApproved bool
+	ApprovedState ApprovedState
 }
 
 func (g *GetReportsQuery) NewParser() *queryparser.Parser {
@@ -33,14 +39,13 @@ func (g *GetReportsQuery) NewParser() *queryparser.Parser {
 
 func (g *GetReportsQuery) NewParseSchema() queryparser.ParseSchema {
 	return queryparser.ParseSchema{
-		"offset":          g.OffsetParseSchema(),
-		"limit":           g.LimitParseSchema(),
-		"dateBegin":       g.DateParseSchema(dateBegin),
-		"dateEnd":         g.DateParseSchema(dateEnd),
-		"match":           g.MatchParseSchema(),
-		"sortBy":          g.SortByParseSchema(),
-		"onlyApproved":    g.ApprovedParseSchema(),
-		"onlyNotApproved": g.NotApprovedParseSchema(),
+		"offset":        g.OffsetParseSchema(),
+		"limit":         g.LimitParseSchema(),
+		"dateBegin":     g.DateParseSchema(dateBegin),
+		"dateEnd":       g.DateParseSchema(dateEnd),
+		"match":         g.MatchParseSchema(),
+		"sortBy":        g.SortByParseSchema(),
+		"approvedState": g.ApprovedStateParseSchema(),
 	}
 }
 
@@ -51,40 +56,19 @@ const (
 	dateEnd   dateType = "dateEnd"
 )
 
-func (g *GetReportsQuery) ApprovedParseSchema() queryparser.ParseSchemaItem {
+func (g *GetReportsQuery) ApprovedStateParseSchema() queryparser.ParseSchemaItem {
 	return queryparser.ParseSchemaItem{
 		TypeMapFunc: func(field string, values []string) (interface{}, error) {
 			if len(values) <= 0 {
 				return nil, nil
 			}
 			value := values[0]
-			onlyApproved, err := strconv.ParseBool(value)
-			if err != nil {
-				return nil, nil
-			}
-			g.OnlyApproved = onlyApproved
+			g.ApprovedState = ApprovedState(value)
+
 			return nil, nil
 		},
 	}
 }
-
-func (g *GetReportsQuery) NotApprovedParseSchema() queryparser.ParseSchemaItem {
-	return queryparser.ParseSchemaItem{
-		TypeMapFunc: func(field string, values []string) (interface{}, error) {
-			if len(values) <= 0 {
-				return nil, nil
-			}
-			value := values[0]
-			onlyNotApproved, err := strconv.ParseBool(value)
-			if err != nil {
-				return nil, nil
-			}
-			g.OnlyNotApproved = onlyNotApproved
-			return nil, nil
-		},
-	}
-}
-
 func (d dateType) GetOperation() filter.FilterOperation {
 	if d == dateBegin {
 		return filter.GTE
@@ -256,7 +240,7 @@ type GetReportsReq struct {
 }
 
 func (g *GetReportsReq) IsOnlyApprovedReports() bool {
-	return g.Query.OnlyApproved
+	return g.Query.ApprovedState == Approved
 }
 
 func (g *GetReportsReq) SetOnlyApprovedReports(ids ...string) {
@@ -267,7 +251,7 @@ func (g *GetReportsReq) SetOnlyApprovedReports(ids ...string) {
 }
 
 func (g *GetReportsReq) IsOnlyNotApprovedReports() bool {
-	return g.Query.OnlyNotApproved
+	return g.Query.ApprovedState == NotApproved
 }
 
 func (g *GetReportsReq) SetOnlyNotApprovedReports(ids ...string) {

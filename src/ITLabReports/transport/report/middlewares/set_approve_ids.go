@@ -31,7 +31,7 @@ type RoleGetter interface {
 	GetSuperAdminRole() string
 }
 
-func SetApprovedReportsIds[Req ReqWithSetApprovedReportsIds, Resp any](
+func SetApprovedStateReportsIds[Req ReqWithSetApprovedReportsIds, Resp any](
 	idsGetter ApprovedReportsIdsGetter,
 	roleGetter RoleGetter,
 ) MiddlewareWithContext[Req, Resp] {
@@ -40,7 +40,7 @@ func SetApprovedReportsIds[Req ReqWithSetApprovedReportsIds, Resp any](
 			ctx context.MiddlewareContext,
 			request Req,
 		) (Resp, error) {
-			if !request.IsOnlyApprovedReports() {
+			if !request.IsOnlyApprovedReports() && !request.IsOnlyNotApprovedReports(){
 				return next(ctx, request)
 			}
 
@@ -71,55 +71,13 @@ func SetApprovedReportsIds[Req ReqWithSetApprovedReportsIds, Resp any](
 			if err != nil {
 				return *new(Resp), errors.Wrap(err, ErrFailedToGetApprovedReportsIds)
 			}
-			request.SetOnlyApprovedReports(ids...)
-
-			return next(ctx, request)
-		}
-	}
-}
-
-func SetNotApprovedReportsIds[Req ReqWithSetApprovedReportsIds, Resp any](
-	idsGetter ApprovedReportsIdsGetter,
-	roleGetter RoleGetter,
-) MiddlewareWithContext[Req, Resp] {
-	return func(next EndpointWithContext[Req, Resp]) EndpointWithContext[Req, Resp] {
-		return func(
-			ctx context.MiddlewareContext,
-			request Req,
-		) (Resp, error) {
-			if !request.IsOnlyNotApprovedReports() {
-				return next(ctx, request)
+			
+			if request.IsOnlyApprovedReports() {
+				request.SetOnlyApprovedReports(ids...)
+			} else if request.IsOnlyNotApprovedReports() {
+				request.SetOnlyNotApprovedReports(ids...)
 			}
-
-			token, err := ctx.GetToken()
-			if err != nil {
-				return next(ctx, request)
-			}
-
-			role, err := ctx.GetRole()
-			if err != nil {
-				return next(ctx, request)
-			}
-
-			var ids []string
-			{
-				if role == roleGetter.GetUserRole() {
-					userId, _ := ctx.GetUserID()
-					ids, err = idsGetter.GetApprovedReportsIdsForUser(
-						userId,
-						token,
-					)
-				} else if role == roleGetter.GetAdminRole() || role == roleGetter.GetSuperAdminRole() {
-					ids, err = idsGetter.GetApprovedReportsIds(
-						token,
-					)
-				}
-			}
-			if err != nil {
-				return *new(Resp), errors.Wrap(err, ErrFailedToGetApprovedReportsIds)
-			}
-			request.SetOnlyNotApprovedReports(ids...)
-
+			
 			return next(ctx, request)
 		}
 	}

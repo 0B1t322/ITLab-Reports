@@ -70,8 +70,7 @@ func BuildMiddlewares(
 ) endpoints.Endpoints {
 	e.GetReports.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
-		internalMiddlewares.SetApprovedReportsIds[*dto.GetReportsReq, *dto.GetReportsResp](opt.approvedReportsIdGetter, opt.auther),
-		internalMiddlewares.SetNotApprovedReportsIds[*dto.GetReportsReq, *dto.GetReportsResp](opt.approvedReportsIdGetter, opt.auther),
+		internalMiddlewares.SetApprovedStateReportsIds[*dto.GetReportsReq, *dto.GetReportsResp](opt.approvedReportsIdGetter, opt.auther),
 		middlewares.RunMiddlewareIfAllFail(
 			middlewares.SetReporterAndImplementer[*dto.GetReportsReq, *dto.GetReportsResp](),
 			// If fail
