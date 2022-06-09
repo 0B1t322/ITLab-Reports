@@ -37,7 +37,7 @@ import (
 // 
 // @Param sortBy query string false "sorting query"
 // 
-// @Param approvedState query string false "filtering on approved state" Enums(approved,notApproved,all)
+// @Param approvedState query string false "filtering on approved state" Enums(approved,notApproved)
 //
 // @Produce json
 //

@@ -21,7 +21,6 @@ type ApprovedState string
 const (
 	Approved    ApprovedState = "approved"
 	NotApproved ApprovedState = "notApproved"
-	All         ApprovedState = "all"
 )
 
 type GetReportsQuery struct {
