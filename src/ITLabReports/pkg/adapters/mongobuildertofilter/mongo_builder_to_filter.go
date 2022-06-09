@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/RTUITLab/ITLab-Reports/pkg/dialect/mongo"
 	builder "github.com/RTUITLab/ITLab-Reports/pkg/dialect/mongo"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type BuilderFilterAdapter[T filter.FieldType] struct {
 	Builder *builder.Predicate
-	Field	string
+	Field   string
 
 	FieldMarshaller FieldMarshaller[T]
 }
@@ -30,7 +32,34 @@ func FieldToTime[T filter.FieldType]() FieldMarshaller[T] {
 	}
 }
 
-type BuilderFilterAdapterOptions[T filter.FieldType] func (b *BuilderFilterAdapter[T])
+func StringIdMarshaller() FieldMarshaller[string] {
+	return func(field filter.FieldFilterer[string]) any {
+		str := fmt.Sprint(field.GetValue())
+
+		id, err := primitive.ObjectIDFromHex(str)
+		if err != nil {
+			return nil
+		}
+
+		return id
+	}
+}
+
+func SliceIdMarshaller() FieldMarshaller[[]string] {
+	return func(field filter.FieldFilterer[[]string]) any {
+		result := mongo.Array()
+		for _, elem := range field.GetValue() {
+			id, err := primitive.ObjectIDFromHex(elem)
+			if err != nil {
+				continue
+			}
+			result.AddElem(id)
+		}
+		return result.Array()
+	}
+}
+
+type BuilderFilterAdapterOptions[T filter.FieldType] func(b *BuilderFilterAdapter[T])
 
 func WithFieldFormatter[T filter.FieldType](fieldMarshaller FieldMarshaller[T]) BuilderFilterAdapterOptions[T] {
 	return func(b *BuilderFilterAdapter[T]) {
@@ -43,9 +72,9 @@ func New[T filter.FieldType](
 	fieldName string,
 	opts ...BuilderFilterAdapterOptions[T],
 ) *BuilderFilterAdapter[T] {
-	b := &BuilderFilterAdapter[T] {
+	b := &BuilderFilterAdapter[T]{
 		Builder: builder,
-		Field: fieldName,
+		Field:   fieldName,
 	}
 
 	for _, opt := range opts {
@@ -64,7 +93,7 @@ func (b *BuilderFilterAdapter[T]) MarshallField(field filter.FieldFilterer[T]) a
 }
 
 func (b *BuilderFilterAdapter[T]) BuildFilterField(
-	field 	filter.FieldFilterer[T],
+	field filter.FieldFilterer[T],
 ) {
 	marshaledField := b.MarshallField(field)
 
@@ -103,6 +132,16 @@ func (b *BuilderFilterAdapter[T]) BuildFilterField(
 		)
 	case filter.NEQ:
 		b.Builder.NEQ(
+			b.Field,
+			marshaledField,
+		)
+	case filter.IN:
+		b.Builder.InArray(
+			b.Field,
+			marshaledField,
+		)
+	case filter.NIN:
+		b.Builder.NotInArray(
 			b.Field,
 			marshaledField,
 		)

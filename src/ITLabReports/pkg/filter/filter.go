@@ -17,6 +17,8 @@ const (
 	LTE
 	EXIST
 	LIKE
+	IN
+	NIN
 )
 
 type OperationFilterer interface {
@@ -24,7 +26,7 @@ type OperationFilterer interface {
 }
 
 type FieldType interface {
-	constraints.Float | constraints.Integer | ~string
+	constraints.Float | constraints.Integer | ~string | []string | any
 }
 
 type FilterField[T FieldType] struct {

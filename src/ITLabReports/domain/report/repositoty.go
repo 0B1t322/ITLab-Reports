@@ -39,6 +39,8 @@ type GetReportsFilterFieldsWithOrAnd struct {
 type GetReportsFilterFields struct {
 	ReportID	*filter.FilterField[string]
 
+	ReportsId	*filter.FilterField[[]string]
+
 	Name		*filter.FilterField[string]
 
 	Date		*filter.FilterField[string]

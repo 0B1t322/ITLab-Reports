@@ -264,6 +264,28 @@ func (p *Predicate) In(field string, values ...interface{}) *Predicate {
 	return p.append(field, in, array)
 }
 
+// InArray returns {"field": {"$in": [...]}}
+//  params:
+// 		array - can be []interface{} or bson.A
+// 		field - name of field
+func (p *Predicate) InArray(field string, array interface{}) *Predicate {
+	switch array := array.(type) {
+	case []interface{}:
+		return p.In(field, array...)
+	case bson.A:
+		return p.In(field, array...)
+	}
+	return p
+}
+
+// InArray returns {"field": {"$in": [...]}}
+//  params:
+// 		array - can be []interface{} or bson.A
+// 		field - name of field
+func InArray(field string, array interface{}) *Predicate {
+	return P().InArray(field, array)
+}
+
 // NotIn returns {"field": {"$nin": [...]}}
 func NotIn(field string, values ...interface{}) *Predicate {
 	return P().NotIn(field, values...)
@@ -286,6 +308,28 @@ func (p *Predicate) NotIn(field string, values ...interface{}) *Predicate {
 	}
 
 	return p.append(field, nin, array)
+}
+
+// NotInArray returns {"field": {"$nin": [...]}}
+//  params:
+// 		array - can be []interface{} or bson.A
+// 		field - name of field
+func (p *Predicate) NotInArray(field string, array interface{}) *Predicate {
+	switch array := array.(type) {
+	case []interface{}:
+		return p.NotIn(field, array...)
+	case bson.A:
+		return p.NotIn(field, array...)
+	}
+	return p
+}
+
+// NotInArray returns {"field": {"$nin": [...]}}
+//  params:
+// 		array - can be []interface{} or bson.A
+// 		field - name of field
+func NotInArray(field string, array interface{}) *Predicate {
+	return P().NotInArray(field, array)
 }
 
 // Exist return {"field": {"$exists": true}}

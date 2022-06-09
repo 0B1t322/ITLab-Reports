@@ -257,9 +257,24 @@ func (m *MongoRepository) BuildFilters(
 
 	if filter.ReportID != nil {
 		filter.ReportID.BuildTo(
-			mongobuildertofilter.New[string](
+			mongobuildertofilter.New(
 				b,
 				"_id",
+				mongobuildertofilter.WithFieldFormatter(
+					mongobuildertofilter.StringIdMarshaller(),
+				),
+			),
+		)
+	}
+
+	if filter.ReportsId != nil {
+		filter.ReportsId.BuildTo(
+			mongobuildertofilter.New(
+				b,
+				"_id",
+				mongobuildertofilter.WithFieldFormatter(
+					mongobuildertofilter.SliceIdMarshaller(),
+				),
 			),
 		)
 	}
