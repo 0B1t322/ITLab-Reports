@@ -72,6 +72,18 @@ func (a *authJWKS) IsSuperAdmin() MiddlewareWithContext[any, any] {
 	return a.superAdmin
 }
 
+func (a *authJWKS) GetUserRole() string {
+	return a.UserRole
+}
+
+func (a *authJWKS) GetAdminRole() string {
+	return a.AdminRole
+}
+
+func (a *authJWKS) GetSuperAdminRole() string {
+	return a.SuperAdminRole
+}
+
 func (a *authJWKS) setUserRole(userRole string) {
 	a.UserRole = userRole
 }
@@ -270,6 +282,18 @@ func (a *testAuth) setRefreshTime(refreshTime time.Duration) {
 
 func (a *testAuth) setLogger(logger log.Logger) {
 	a.logger = logger
+}
+
+func (a *testAuth) GetUserRole() string {
+	return a.UserRole
+}
+
+func (a *testAuth) GetAdminRole() string {
+	return a.AdminRole
+}
+
+func (a *testAuth) GetSuperAdminRole() string {
+	return a.SuperAdminRole
 }
 
 // Check that token is valid

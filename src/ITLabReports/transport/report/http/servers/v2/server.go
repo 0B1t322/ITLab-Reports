@@ -9,11 +9,13 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v2"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v2"
 	. "github.com/RTUITLab/ITLab-Reports/transport/report/http/handlers/v2"
+	internalMiddlewares "github.com/RTUITLab/ITLab-Reports/transport/report/middlewares"
 	"github.com/gorilla/mux"
 )
 
-type serverOptions struct{
-	auther middlewares.Auther
+type serverOptions struct {
+	auther                  middlewares.Auther
+	approvedReportsIdGetter internalMiddlewares.ApprovedReportsIdsGetter
 }
 
 type ServerOptions func(s *serverOptions)
@@ -21,6 +23,12 @@ type ServerOptions func(s *serverOptions)
 func WithAuther(a middlewares.Auther) ServerOptions {
 	return func(s *serverOptions) {
 		s.auther = a
+	}
+}
+
+func WithApprovedreportsIdGetter(a internalMiddlewares.ApprovedReportsIdsGetter) ServerOptions {
+	return func(s *serverOptions) {
+		s.approvedReportsIdGetter = a
 	}
 }
 
@@ -48,6 +56,8 @@ func NewServer(
 		opt(s)
 	}
 
+	e = BuildMiddlewares(e, s)
+
 	r.Handle(
 		"/reports/v2/reports",
 		GetReports(e),
@@ -60,6 +70,7 @@ func BuildMiddlewares(
 ) endpoints.Endpoints {
 	e.GetReports.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+		internalMiddlewares.SetApprovedReportsIds[*dto.GetReportsReq, *dto.GetReportsResp](opt.approvedReportsIdGetter, opt.auther),
 		middlewares.RunMiddlewareIfAllFail(
 			middlewares.SetReporterAndImplementer[*dto.GetReportsReq, *dto.GetReportsResp](),
 			// If fail

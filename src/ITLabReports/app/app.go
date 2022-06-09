@@ -9,6 +9,7 @@ import (
 	_ "github.com/RTUITLab/ITLab-Reports/docs"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/toidchecker"
 	"github.com/RTUITLab/ITLab-Reports/service/idvalidator"
+	"github.com/RTUITLab/ITLab-Reports/service/salary"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -16,9 +17,10 @@ import (
 )
 
 type App struct {
-	Router    *mux.Router
-	Auther    middlewares.Auther
-	IdChecker middlewares.IdChecker
+	Router        *mux.Router
+	Auther        middlewares.Auther
+	IdChecker     middlewares.IdChecker
+	SalaryService salary.SalaryService
 
 	cfg *config.Config
 }
@@ -42,6 +44,8 @@ func New(cfg *config.Config) *App {
 
 	// Build idChecker
 	app.buildIdChecker()
+	// Build salary service
+	app.buildSalaryService()
 
 	return app
 }
@@ -82,6 +86,17 @@ func (a *App) buildIdChecker() {
 				idvalidator.AlwaysTrueIdValidator(),
 			),
 		)
+	}
+}
+
+func (a *App) buildSalaryService() {
+	if !a.cfg.App.TestMode {
+		a.SalaryService = salary.NewExternalRestSalaryService(
+			a.cfg.App.ITLabURL,
+			nil,
+		)
+	} else {
+		a.SalaryService = salary.NewTestModeSalaryService()
 	}
 }
 

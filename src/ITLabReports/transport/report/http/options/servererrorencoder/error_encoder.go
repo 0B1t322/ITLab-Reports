@@ -10,6 +10,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	rerr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
 	serr "github.com/RTUITLab/ITLab-Reports/transport/report/http/errors"
+	internalMiddlewares "github.com/RTUITLab/ITLab-Reports/transport/report/middlewares"
 	"github.com/clarketm/json"
 	"github.com/sirupsen/logrus"
 )
@@ -37,10 +38,13 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 			err == rerr.DraftIdNotValud, errors.Is(err, serr.ValidationError), 
 			errors.Is(err, middlewares.ErrIncorectId):
 		statusCode = http.StatusBadRequest
-	// Confilct
+	// Confilct id checker
 	case errors.Is(err, middlewares.ErrFaieldToValidateId):
 		statusCode = http.StatusConflict
 		err = errors.Unwrap(err)
+	// Confilct salary
+	case errors.Is(err, internalMiddlewares.ErrFailedToGetApprovedReportsIds):
+		statusCode = http.StatusConflict
 	// NotFound
 	case err == reports.ErrReportNotFound, err == rerr.DraftNotFound:
 		statusCode = http.StatusNotFound

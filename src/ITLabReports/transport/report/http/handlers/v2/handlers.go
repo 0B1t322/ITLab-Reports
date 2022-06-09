@@ -36,6 +36,8 @@ import (
 // @Param match query string false "match query"
 // 
 // @Param sortBy query string false "sorting query"
+// 
+// @Param onlyApproved query boolean false "filtering on approved"
 //
 // @Produce json
 //

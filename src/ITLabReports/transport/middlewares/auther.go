@@ -30,6 +30,12 @@ type Auther interface {
 	// catchable errors:
 	// 	NotSuperAdmin
 	IsSuperAdmin() MiddlewareWithContext[any, any]
+
+	GetAdminRole() string
+
+	GetUserRole() string
+
+	GetSuperAdminRole() string
 }
 
 type auther interface {

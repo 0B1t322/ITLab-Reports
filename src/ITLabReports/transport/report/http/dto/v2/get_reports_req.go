@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/0B1t322/QueryParser"
+	queryparser "github.com/0B1t322/QueryParser"
 	"github.com/0B1t322/QueryParser/typemapper"
 	"github.com/RTUITLab/ITLab-Reports/domain/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
@@ -18,6 +18,8 @@ import (
 
 type GetReportsQuery struct {
 	Params *report.GetReportsParams
+
+	OnlyApproved bool
 }
 
 func (g *GetReportsQuery) NewParser() *queryparser.Parser {
@@ -29,20 +31,39 @@ func (g *GetReportsQuery) NewParser() *queryparser.Parser {
 
 func (g *GetReportsQuery) NewParseSchema() queryparser.ParseSchema {
 	return queryparser.ParseSchema{
-		"offset": g.OffsetParseSchema(),
-		"limit": g.LimitParseSchema(),
-		"dateBegin": g.DateParseSchema(dateBegin),
-		"dateEnd": g.DateParseSchema(dateEnd),
-		"match": g.MatchParseSchema(),
-		"sortBy": g.SortByParseSchema(),
+		"offset":       g.OffsetParseSchema(),
+		"limit":        g.LimitParseSchema(),
+		"dateBegin":    g.DateParseSchema(dateBegin),
+		"dateEnd":      g.DateParseSchema(dateEnd),
+		"match":        g.MatchParseSchema(),
+		"sortBy":       g.SortByParseSchema(),
+		"onlyApproved": g.ApprovedParseSchema(),
 	}
 }
 
 type dateType string
+
 const (
-	dateBegin dateType 	= "dateBegin"
-	dateEnd dateType	= "dateEnd"
+	dateBegin dateType = "dateBegin"
+	dateEnd   dateType = "dateEnd"
 )
+
+func (g *GetReportsQuery) ApprovedParseSchema() queryparser.ParseSchemaItem {
+	return queryparser.ParseSchemaItem{
+		TypeMapFunc: func(field string, values []string) (interface{}, error) {
+			if len(values) <= 0 {
+				return nil, nil
+			}
+			value := values[0]
+			onlyApproved, err := strconv.ParseBool(value)
+			if err != nil {
+				return nil, nil
+			}
+			g.OnlyApproved = onlyApproved
+			return nil, nil
+		},
+	}
+}
 
 func (d dateType) GetOperation() filter.FilterOperation {
 	if d == dateBegin {
@@ -71,7 +92,7 @@ func (g *GetReportsQuery) DateParseSchema(dateType dateType) queryparser.ParseSc
 						GetReportsFilterFields: report.GetReportsFilterFields{
 							Date: &filter.FilterField[string]{
 								Operation: dateType.GetOperation(),
-								Value: date.UTC().Format(time.RFC3339Nano),
+								Value:     date.UTC().Format(time.RFC3339Nano),
 							},
 						},
 					},
@@ -81,7 +102,7 @@ func (g *GetReportsQuery) DateParseSchema(dateType dateType) queryparser.ParseSc
 			return nil, nil
 		},
 	}
-} 
+}
 
 func (g *GetReportsQuery) OffsetParseSchema() queryparser.ParseSchemaItem {
 	return queryparser.ParseSchemaItem{
@@ -181,9 +202,9 @@ func (g *GetReportsQuery) SetSortField(field string, order ordertype.OrderType) 
 func (g *GetReportsQuery) SetMatchField(field string, value string) {
 	switch field {
 	case "name":
-		g.Params.Filter.Name = &filter.FilterField[string] {
+		g.Params.Filter.Name = &filter.FilterField[string]{
 			Operation: filter.LIKE,
-			Value: value,
+			Value:     value,
 		}
 	case "text":
 		// TODO if needed
@@ -193,25 +214,36 @@ func (g *GetReportsQuery) SetMatchField(field string, value string) {
 			return
 		}
 
-		g.Params.Filter.Date = &filter.FilterField[string] {
+		g.Params.Filter.Date = &filter.FilterField[string]{
 			Operation: filter.EQ,
-			Value: date.UTC().Format(time.RFC3339Nano),
+			Value:     date.UTC().Format(time.RFC3339Nano),
 		}
 	case "assignees.implementer":
-		g.Params.Filter.Implementer = &filter.FilterField[string] {
+		g.Params.Filter.Implementer = &filter.FilterField[string]{
 			Operation: filter.EQ,
-			Value: value,
+			Value:     value,
 		}
 	case "assignees.reporter":
-		g.Params.Filter.Reporter = &filter.FilterField[string] {
+		g.Params.Filter.Reporter = &filter.FilterField[string]{
 			Operation: filter.EQ,
-			Value: value,
+			Value:     value,
 		}
 	}
 }
 
 type GetReportsReq struct {
 	Query GetReportsQuery
+}
+
+func (g *GetReportsReq) IsOnlyApprovedReports() bool {
+	return g.Query.OnlyApproved
+}
+
+func (g *GetReportsReq) SetOnlyApprovedReports(ids ...string) {
+	g.Query.Params.Filter.ReportsId = &filter.FilterField[[]string]{
+		Value: ids,
+		Operation: filter.IN,
+	}
 }
 
 func (g *GetReportsReq) SetImplementerAndReporter(implementer, reporter string) {
@@ -225,7 +257,7 @@ func (g *GetReportsReq) SetImplementerAndReporter(implementer, reporter string) 
 		&report.GetReportsFilterFieldsWithOrAnd{
 			GetReportsFilterFields: report.GetReportsFilterFields{
 				Reporter: &filter.FilterField[string]{
-					Value: reporter,
+					Value:     reporter,
 					Operation: filter.EQ,
 				},
 			},
@@ -233,7 +265,7 @@ func (g *GetReportsReq) SetImplementerAndReporter(implementer, reporter string) 
 		&report.GetReportsFilterFieldsWithOrAnd{
 			GetReportsFilterFields: report.GetReportsFilterFields{
 				Reporter: &filter.FilterField[string]{
-					Value: implementer,
+					Value:     implementer,
 					Operation: filter.EQ,
 				},
 			},
@@ -256,8 +288,7 @@ func DecodeGetReportsReq(
 	req := &GetReportsReq{
 		Query: GetReportsQuery{
 			Params: &report.GetReportsParams{
-				Filter: &report.GetReportsFilter{
-				},
+				Filter: &report.GetReportsFilter{},
 			},
 		},
 	}
