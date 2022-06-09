@@ -20,6 +20,8 @@ type GetReportsQuery struct {
 	Params *report.GetReportsParams
 
 	OnlyApproved bool
+
+	OnlyNotApproved bool
 }
 
 func (g *GetReportsQuery) NewParser() *queryparser.Parser {
@@ -31,13 +33,14 @@ func (g *GetReportsQuery) NewParser() *queryparser.Parser {
 
 func (g *GetReportsQuery) NewParseSchema() queryparser.ParseSchema {
 	return queryparser.ParseSchema{
-		"offset":       g.OffsetParseSchema(),
-		"limit":        g.LimitParseSchema(),
-		"dateBegin":    g.DateParseSchema(dateBegin),
-		"dateEnd":      g.DateParseSchema(dateEnd),
-		"match":        g.MatchParseSchema(),
-		"sortBy":       g.SortByParseSchema(),
-		"onlyApproved": g.ApprovedParseSchema(),
+		"offset":          g.OffsetParseSchema(),
+		"limit":           g.LimitParseSchema(),
+		"dateBegin":       g.DateParseSchema(dateBegin),
+		"dateEnd":         g.DateParseSchema(dateEnd),
+		"match":           g.MatchParseSchema(),
+		"sortBy":          g.SortByParseSchema(),
+		"onlyApproved":    g.ApprovedParseSchema(),
+		"onlyNotApproved": g.NotApprovedParseSchema(),
 	}
 }
 
@@ -60,6 +63,23 @@ func (g *GetReportsQuery) ApprovedParseSchema() queryparser.ParseSchemaItem {
 				return nil, nil
 			}
 			g.OnlyApproved = onlyApproved
+			return nil, nil
+		},
+	}
+}
+
+func (g *GetReportsQuery) NotApprovedParseSchema() queryparser.ParseSchemaItem {
+	return queryparser.ParseSchemaItem{
+		TypeMapFunc: func(field string, values []string) (interface{}, error) {
+			if len(values) <= 0 {
+				return nil, nil
+			}
+			value := values[0]
+			onlyNotApproved, err := strconv.ParseBool(value)
+			if err != nil {
+				return nil, nil
+			}
+			g.OnlyNotApproved = onlyNotApproved
 			return nil, nil
 		},
 	}
@@ -241,8 +261,19 @@ func (g *GetReportsReq) IsOnlyApprovedReports() bool {
 
 func (g *GetReportsReq) SetOnlyApprovedReports(ids ...string) {
 	g.Query.Params.Filter.ReportsId = &filter.FilterField[[]string]{
-		Value: ids,
+		Value:     ids,
 		Operation: filter.IN,
+	}
+}
+
+func (g *GetReportsReq) IsOnlyNotApprovedReports() bool {
+	return g.Query.OnlyNotApproved
+}
+
+func (g *GetReportsReq) SetOnlyNotApprovedReports(ids ...string) {
+	g.Query.Params.Filter.ReportsId = &filter.FilterField[[]string]{
+		Value:     ids,
+		Operation: filter.NIN,
 	}
 }
 
