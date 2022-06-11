@@ -267,17 +267,17 @@ func (m *MongoRepository) BuildFilters(
 		)
 	}
 
-	if filter.ReportsId != nil {
-		filter.ReportsId.BuildTo(
-			mongobuildertofilter.New(
-				b,
-				"_id",
-				mongobuildertofilter.WithFieldFormatter(
-					mongobuildertofilter.SliceIdMarshaller(),
-				),
-			),
-		)
-	}
+	// if filter.ReportsId != nil {
+	// 	filter.ReportsId.BuildTo(
+	// 		mongobuildertofilter.New(
+	// 			b,
+	// 			"_id",
+	// 			mongobuildertofilter.WithFieldFormatter(
+	// 				mongobuildertofilter.SliceIdMarshaller(),
+	// 			),
+	// 		),
+	// 	)
+	// }
 
 	if filter.Date != nil {
 		filter.Date.BuildTo(

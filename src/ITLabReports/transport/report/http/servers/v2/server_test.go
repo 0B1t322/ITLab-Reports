@@ -7,18 +7,20 @@ import (
 
 	"github.com/RTUITLab/ITLab-Reports/config"
 	reportdomain "github.com/RTUITLab/ITLab-Reports/domain/report"
+	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/toapprovereportsidgetter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/RTUITLab/ITLab-Reports/service/reports/reportservice"
+	"github.com/RTUITLab/ITLab-Reports/service/salary"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
+	mcontext "github.com/RTUITLab/ITLab-Reports/transport/middlewares/context"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v2"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v2"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/servers/v2"
-	"github.com/stretchr/testify/require"
 	"github.com/golang-jwt/jwt/v4"
-	mcontext "github.com/RTUITLab/ITLab-Reports/transport/middlewares/context"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFunc_Server(t *testing.T) {
@@ -44,6 +46,11 @@ func TestFunc_Server(t *testing.T) {
 					middlewares.WithUserRole("reports.user"),
 					middlewares.WithSuperAdminRole("admin"),
 					middlewares.WithRoleClaim("roles"),
+				),
+			),
+			servers.WithApprovedreportsIdGetter(
+				toapprovereportsidgetter.ToApproveReportsIdGetter(
+					salary.NewTestModeSalaryService(),
 				),
 			),
 		),
@@ -75,18 +82,18 @@ func TestFunc_Server(t *testing.T) {
 	// ).SignedString([]byte("test"))
 	// require.NoError(t, err)
 
-	// adminToken, err := jwt.NewWithClaims(
-	// 	jwt.SigningMethodHS256, jwt.MapClaims{
-	// 		"roles": []any{
-	// 			"reports.admin",
-	// 		},
-	// 		"sub": "admin_1_id",
-	// 		"aud": "itlab",
-	// 		"nbf": 1650536405,
-	// 		"exp": 1650540005,
-	// 	},
-	// ).SignedString([]byte("test"))
-	// require.NoError(t, err)
+	adminToken, err := jwt.NewWithClaims(
+		jwt.SigningMethodHS256, jwt.MapClaims{
+			"roles": []any{
+				"reports.admin",
+			},
+			"sub": "admin_1_id",
+			"aud": "itlab",
+			"nbf": 1650536405,
+			"exp": 1650540005,
+		},
+	).SignedString([]byte("test"))
+	require.NoError(t, err)
 
 	notAuthUser, err := jwt.NewWithClaims(
 		jwt.SigningMethodHS256, jwt.MapClaims{
@@ -112,8 +119,7 @@ func TestFunc_Server(t *testing.T) {
 
 					resp, err := httpEnds.GetReports(
 						mctx,
-						&dto.GetReportsReq{
-						},
+						&dto.GetReportsReq{},
 					)
 					require.Error(t, err)
 					require.Nil(t, resp)
@@ -136,11 +142,11 @@ func TestFunc_Server(t *testing.T) {
 											GetReportsFilterFieldsWithOrAnd: reportdomain.GetReportsFilterFieldsWithOrAnd{
 												GetReportsFilterFields: reportdomain.GetReportsFilterFields{
 													Implementer: &filter.FilterField[string]{
-														Value: "some_id",
+														Value:     "some_id",
 														Operation: filter.EQ,
 													},
 													Reporter: &filter.FilterField[string]{
-														Value: "some_id",
+														Value:     "some_id",
 														Operation: filter.EQ,
 													},
 												},
@@ -159,6 +165,116 @@ func TestFunc_Server(t *testing.T) {
 							require.Nil(t, req.Query.Params.Filter.GetReportsFilterFieldsWithOrAnd.GetReportsFilterFields.Implementer)
 							require.Nil(t, req.Query.Params.Filter.GetReportsFilterFieldsWithOrAnd.GetReportsFilterFields.Reporter)
 
+						},
+					)
+
+					t.Run(
+						"Approved",
+						func(t *testing.T) {
+							t.Run(
+								"Admin",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(adminToken)
+
+									req := &dto.GetReportsReq{
+										Query: dto.GetReportsQuery{
+											ApprovedState: dto.Approved,
+											Params: &reportdomain.GetReportsParams{
+												Filter: &reportdomain.GetReportsFilter{
+
+												},
+											},
+										},
+									}
+
+									_, err := httpEnds.GetReports(
+										mctx,
+										req,
+									)
+									require.NoError(t, err)
+								},
+							)
+
+							t.Run(
+								"User",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(user1Token)
+
+									req := &dto.GetReportsReq{
+										Query: dto.GetReportsQuery{
+											ApprovedState: dto.Approved,
+											Params: &reportdomain.GetReportsParams{
+												Filter: &reportdomain.GetReportsFilter{
+													
+												},
+											},
+										},
+									}
+
+									_, err := httpEnds.GetReports(
+										mctx,
+										req,
+									)
+									require.NoError(t, err)
+								},
+							)
+						},
+					)
+
+					t.Run(
+						"NotApproved",
+						func(t *testing.T) {
+							t.Run(
+								"Admin",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(adminToken)
+
+									req := &dto.GetReportsReq{
+										Query: dto.GetReportsQuery{
+											ApprovedState: dto.NotApproved,
+											Params: &reportdomain.GetReportsParams{
+												Filter: &reportdomain.GetReportsFilter{
+													
+												},
+											},
+										},
+									}
+
+									_, err := httpEnds.GetReports(
+										mctx,
+										req,
+									)
+									require.NoError(t, err)
+								},
+							)
+
+							t.Run(
+								"User",
+								func(t *testing.T) {
+									mctx := mcontext.New(context.Background())
+									mctx.SetToken(user1Token)
+
+									req := &dto.GetReportsReq{
+										Query: dto.GetReportsQuery{
+											ApprovedState: dto.NotApproved,
+											Params: &reportdomain.GetReportsParams{
+												Filter: &reportdomain.GetReportsFilter{
+													
+												},
+											},
+										},
+									}
+
+									_, err := httpEnds.GetReports(
+										mctx,
+										req,
+									)
+									require.NoError(t, err)
+								},
+							)
 						},
 					)
 				},

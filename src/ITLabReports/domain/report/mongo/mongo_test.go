@@ -181,6 +181,39 @@ func TestFunc_Filters(t *testing.T) {
 							)
 						},
 					)
+
+					t.Run(
+						"Nin",
+						func(t *testing.T) {
+							id_1 := primitive.NewObjectID()
+							id_2 := primitive.NewObjectID()
+
+							actual := m.BuildFilters(
+								&domain.GetReportsFilterFieldsWithOrAnd{
+									GetReportsFilterFields: domain.GetReportsFilterFields{
+										ReportsId: &filter.FilterField[[]string]{
+											Value: []string{id_1.Hex(), id_2.Hex()},
+											Operation: filter.NIN,
+										},
+									},
+								},
+							).Object()
+
+							expected := bson.M{
+								"_id": bson.M{
+									"$nin": bson.A{
+										id_1, id_2,
+									},
+								},
+							}
+
+							require.Equal(
+								t,
+								expected,
+								actual,
+							)
+						},
+					)
 				},
 			)
 		},
