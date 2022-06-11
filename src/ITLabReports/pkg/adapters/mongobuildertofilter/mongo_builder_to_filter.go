@@ -71,7 +71,7 @@ func New[T filter.FieldType](
 	builder *builder.Predicate,
 	fieldName string,
 	opts ...BuilderFilterAdapterOptions[T],
-) *BuilderFilterAdapter[T] {
+) filter.FilterBuilder[T] {
 	b := &BuilderFilterAdapter[T]{
 		Builder: builder,
 		Field:   fieldName,
