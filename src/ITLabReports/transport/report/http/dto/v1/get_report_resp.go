@@ -2,7 +2,7 @@ package dto
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/clarketm/json"
 	"net/http"
 
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
@@ -10,7 +10,7 @@ import (
 
 type GetReportResp struct {
 	ID       string           `json:"id"`
-	Name     string           `json:"name"`
+	Name     string           `json:"name,omitempty"`
 	Text     string           `json:"text"`
 	Date     string           `json:"date"`
 	Assignes GetAssigneesResp `json:"assignees"`
