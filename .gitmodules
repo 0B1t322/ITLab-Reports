@@ -1,0 +1,3 @@
+[submodule "ITLab-Protos"]
+	path = ITLab-Protos
+	url = git@github.com:RTUITLab/ITLab-Protos.git
