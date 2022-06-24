@@ -112,7 +112,7 @@ func BuildMiddlewares(
 	e.GetReport.AddCustomMiddlewares(
 		middlewares.Auth[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
 		middlewares.RunMiddlewareIfAllFail(
-			middlewares.CheckUserIsReporter[*dto.GetReportReq, *dto.GetReportResp](),
+			middlewares.CheckUserIsReporterOrImplementer[*dto.GetReportReq, *dto.GetReportResp](),
 			middlewares.IsSuperAdmin[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
 			middlewares.IsAdmin[*dto.GetReportReq, *dto.GetReportResp](opt.auther),
 		),

@@ -258,6 +258,37 @@ func TestFunc_Server(t *testing.T) {
 					)
 
 					t.Run(
+						"GetReportWhereUserIsImplementer",
+						func(t *testing.T) {
+							name := "some_report"
+							mctx := mcontext.New(context.Background())
+							mctx.SetToken(user1Token)
+							created, err := httpEnds.CreateReport(
+								mctx,
+								&dto.CreateReportReq{
+									Name: &name,
+									Text: "some_text",
+									Implementor: "user_2_id",
+								},
+							)
+							require.NoError(t, err)
+
+							id := created.ID
+
+							mctx = mcontext.New(context.Background())
+							mctx.SetToken(user2Token)
+							get, err := httpEnds.GetReport(
+								mctx,
+								&dto.GetReportReq{
+									ID: id,
+								},
+							)
+							require.NoError(t, err)
+							require.NotNil(t, get)
+						},
+					)
+
+					t.Run(
 						"AdminGetCreatedReportFromUser",
 						func(t *testing.T) {
 							mctxUser := mcontext.New(context.Background())
