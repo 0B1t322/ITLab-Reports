@@ -16,6 +16,8 @@ type AppConfig struct {
 
 	TestMode bool `envconfig:"ITLAB_REPORTS_APP_TEST_MODE"`
 
+	GrpcAppPort string `default:"8081" envconfig:"ITLAB_REPORTS_APP_GRPC_PORT"`
+
 	ITLabURL string `default:"https://dev.manage.rtuitlab.dev" envconfig:"ITLAB_REPORTS_APP_ITLAB_URL"`
 }
 
