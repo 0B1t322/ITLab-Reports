@@ -62,4 +62,4 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-replace github.com/RTUITLab/ITLab v1.0.0 => ../ITLab
+replace github.com/RTUITLab/ITLab v1.0.0 => ./pkg/ITLab
