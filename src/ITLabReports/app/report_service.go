@@ -1,11 +1,11 @@
 package app
 
 import (
-	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/service/reports/reportservice"
+	"github.com/RTUITLab/ITLab-Reports/transport/report"
 )
 
-func (a *App) BuildReportService() (reports.Service ,error) {
+func (a *App) BuildReportService() error {
 	service, err := reportservice.New(
 		reportservice.WithMongoRepositoryAndCollectionName(
 			a.cfg.MongoDB.URI,
@@ -13,8 +13,14 @@ func (a *App) BuildReportService() (reports.Service ,error) {
 		),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return service, nil
+	a.ReportService = service
+
+	return nil
+}
+
+func (a *App) BuildReportEndpoints() {
+	a.ReportEndpoints = report.MakeEndpoints(a.ReportService)
 }

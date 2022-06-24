@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -9,18 +10,29 @@ import (
 	_ "github.com/RTUITLab/ITLab-Reports/docs"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/toidchecker"
 	"github.com/RTUITLab/ITLab-Reports/service/idvalidator"
+	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/service/salary"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
+	"github.com/RTUITLab/ITLab-Reports/transport/report"
+	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	swag "github.com/swaggo/http-swagger"
+	"google.golang.org/grpc"
 )
 
 type App struct {
 	Router        *mux.Router
+	GRPCServer    *grpc.Server
 	Auther        middlewares.Auther
 	IdChecker     middlewares.IdChecker
 	SalaryService salary.SalaryService
+
+	ReportService reports.Service
+	DraftService  reports.Service
+
+	ReportEndpoints report.Endpoints
+	DraftEndpoints  report.Endpoints
 
 	cfg *config.Config
 }
@@ -46,6 +58,17 @@ func New(cfg *config.Config) *App {
 	app.buildIdChecker()
 	// Build salary service
 	app.buildSalaryService()
+	// Build services
+	if err := app.BuildReportService(); err != nil {
+		log.Panicf("Failed to build app: %v", err)
+	}
+
+	if err := app.BuildDraftService(); err != nil {
+		log.Panicf("Failed to build app: %v", err)
+	}
+
+	app.BuildReportEndpoints()
+	app.BuildDraftEndpoints()
 
 	return app
 }
@@ -100,56 +123,43 @@ func (a *App) buildSalaryService() {
 	}
 }
 
-func (a *App) BuildDraftHTTP() (DraftEndpoints, error) {
-	s, err := a.BuildDraftService()
-	if err != nil {
-		return DraftEndpoints{}, err
-	}
+func (a *App) BuildHTTP() {
+	draftHTTPEndpoints := a.BuildDraftsHTTPV1(a.DraftEndpoints)
 
-	e := a.BuildReportsEndpoints(s)
-
-	draftEnds := a.BuildDraftsHTTPV1(e)
-
-	return draftEnds, nil
-}
-
-func (a *App) BuildReportsHTTP(d DraftEndpoints) error {
-	s, err := a.BuildReportService()
-	if err != nil {
-		return err
-	}
-
-	e := a.BuildReportsEndpoints(s)
-
-	a.BuildReportsHTTPV1(e, ToDraftService(d))
-	a.BuildReportsHTTPV2(e)
-	return nil
-}
-
-func (a *App) BuildHTTP() error {
-	draft, err := a.BuildDraftHTTP()
-	if err != nil {
-		return err
-	}
-
-	if err := a.BuildReportsHTTP(draft); err != nil {
-		return err
-	}
+	a.BuildReportsHTTPV1(a.ReportEndpoints, ToDraftService(draftHTTPEndpoints))
+	a.BuildReportsHTTPV2(a.ReportEndpoints)
 
 	docs := a.Router.PathPrefix("/reports/swagger")
 	docs.Handler(
 		swag.WrapHandler,
 	)
+}
 
-	return nil
+func (a *App) BuildGRPC() {
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterReportsServer(grpcServer, a.BuildReportsGRPCV1(a.ReportEndpoints))
+
+	a.GRPCServer = grpcServer
+}
+
+func (a *App) StartGRPC() {
+	a.BuildGRPC()
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", a.cfg.App.GrpcAppPort))
+	if err != nil {
+		log.Panicf("Failed to start grpc application %v", err)
+	}
+
+	log.Infof("Starting grpc Application is port %s", a.cfg.App.GrpcAppPort)
+	if err := a.GRPCServer.Serve(lis); err != nil {
+		log.Panicf("Failed to start grpc application %v", err)
+	}
 }
 
 func (a *App) StartHTTP() {
-	if err := a.BuildHTTP(); err != nil {
-		log.Panicf("Failed to start application %v", err)
-	}
+	a.BuildHTTP()
 
-	log.Infof("Starting Application is port %s", a.cfg.App.AppPort)
+	log.Infof("Starting http Application is port %s", a.cfg.App.AppPort)
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%s", a.cfg.App.AppPort),
 		Handler:        a.Router,
@@ -159,7 +169,7 @@ func (a *App) StartHTTP() {
 		IdleTimeout:    2 * time.Second,
 	}
 	if err := s.ListenAndServe(); err != nil {
-		log.Panicf("Failed to start application %v", err)
+		log.Panicf("Failed to start http application %v", err)
 	}
 
 }

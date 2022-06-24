@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 
-	"github.com/RTUITLab/ITLab-Reports/transport/report"
-	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/servers/v1"
 	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/endpoints/v1"
+	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/servers/v1"
+	"github.com/RTUITLab/ITLab-Reports/transport/report"
 )
 
 type DraftEndpoints = endpoints.Endpoints
