@@ -33,6 +33,9 @@ ITLAB_REPORTS_MONGO_URI=mongodb://user:password@localhost:27017
 # app running port 
 ITLAB_REPORTS_APP_PORT=8080
 
+# grpc application port
+ITLAB_REPORTS_APP_GRPC_PORT=8081
+
 # testMode=true disables jwt validation
 ITLAB_REPORTS_APP_TEST_MODE=false
 
