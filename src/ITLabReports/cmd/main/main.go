@@ -19,5 +19,9 @@ func main() {
 	app := app.New(
 		cfg,
 	)
-	app.StartHTTP()
+	go app.StartHTTP()
+
+	go app.StartGRPC()
+
+	select {}
 }
