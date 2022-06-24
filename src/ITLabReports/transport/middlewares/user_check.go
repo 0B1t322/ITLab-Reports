@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares/context"
-	"github.com/sirupsen/logrus"
 )
 
 type RespWithReporter interface {
@@ -75,7 +74,6 @@ func CheckUserIsReporterOrImplementer[Req any, Resp RespWithReporterAndImplement
 			request Req,
 		) (Resp, error) {
 			resp, err := next(ctx, request)
-			logrus.Infof("resp %+v err %+v", resp, err)
 			if err != nil {
 				return resp, err
 			}
@@ -88,7 +86,6 @@ func CheckUserIsReporterOrImplementer[Req any, Resp RespWithReporterAndImplement
 			if resp.GetImplementer() == userId || resp.GetReporter() == userId {
 				return resp, err
 			}
-			logrus.Infof("return resp %+v", resp)
 			return resp, NotAdmin
 		}
 	}
