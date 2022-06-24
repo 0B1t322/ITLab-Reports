@@ -4,6 +4,8 @@ WORKDIR /go/src/ITLabReports/
 
 ENV CGO_ENABLED=0
 COPY go.* ./
+# Copy submodule
+COPY ./pkg/ITLab/go.* ./
 RUN go mod download
 
 COPY . .
