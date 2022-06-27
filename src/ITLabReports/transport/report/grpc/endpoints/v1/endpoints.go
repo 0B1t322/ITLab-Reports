@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/sirupsen/logrus"
 	"context"
 
 	"github.com/RTUITLab/ITLab-Reports/pkg/endpoint"
@@ -9,6 +10,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/grpc/dto/v1"
 	types "github.com/RTUITLab/ITLab/proto/reports/types"
 	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
+	
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -49,7 +51,7 @@ func makeGetReportEndpoint(
 		} else if err != nil {
 			return nil, err
 		}
-
+		logrus.Info("Get report endpoint")
 		return &dto.GetReportResp{
 			Result: &pb.GetReportResp_Report{
 				Report: &types.Report{
