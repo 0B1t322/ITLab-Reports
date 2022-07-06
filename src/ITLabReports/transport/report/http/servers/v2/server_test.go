@@ -297,8 +297,7 @@ func TestFunc_DTO(t *testing.T) {
 				context.Background(),
 				httpReq,
 			)
-			require.NoError(t, err)
-
+			require.NoError(t, err)	
 			expect := &dto.GetReportsReq{
 				Query: dto.GetReportsQuery{
 					Params: &reportdomain.GetReportsParams{
@@ -354,8 +353,9 @@ func TestFunc_DTO(t *testing.T) {
 
 			require.Equal(
 				t,
-				expect,
-				req,
+				expect.Query.Params,
+				req.Query.Params,
+				"Failed to decode GetReportsReq",
 			)
 		},
 	)
