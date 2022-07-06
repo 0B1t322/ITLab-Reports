@@ -19,6 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	swag "github.com/swaggo/http-swagger"
 	"google.golang.org/grpc"
+	salaryGrpc "github.com/RTUITLab/ITLab/proto/salary/v1"
 )
 
 type App struct {
@@ -114,9 +115,12 @@ func (a *App) buildIdChecker() {
 
 func (a *App) buildSalaryService() {
 	if !a.cfg.App.TestMode {
-		a.SalaryService = salary.NewExternalRestSalaryService(
-			a.cfg.App.ITLabURL,
-			nil,
+		conn, err := grpc.Dial(a.cfg.App.SalaryGRPCAddr, grpc.WithInsecure())
+		if err != nil {
+			log.Panicf("Failed to connect to salary service: %v", err)
+		}
+		a.SalaryService = salary.NewExternalGRPCSalaryService(
+			salaryGrpc.NewApprovedReportsSalaryClient(conn),
 		)
 	} else {
 		a.SalaryService = salary.NewTestModeSalaryService()
