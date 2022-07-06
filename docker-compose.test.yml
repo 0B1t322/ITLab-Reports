@@ -11,7 +11,7 @@ services:
       - ITLAB_REPORTS_AUTH_AUDIENCE=itlab
       - ITLAB_REPORTS_AUTH_ISSUER=https://exampleissuersite.com
       - ITLAB_REPORTS_AUTH_SCOPE=itlab.reports
-      - ITLAB_REPORTS_MONGO_URI=mongodb://test-db:27017/ITLabReports
+      - ITLAB_REPORTS_MONGO_URI=mongodb://root:root@test-db:27017/ITLabReports?authSource=admin
       - ITLAB_REPORTS_APP_PORT=8080
       - ITLAB_REPORTS_APP_TEST_MODE=true
       - ITLAB_REPORTS_ROLE_USER=user
@@ -19,6 +19,7 @@ services:
       - ITLAB_REPORTS_ROLE_SUPER_ADMIN=admin
     ports:
       - 8080:8080
+      - 8081:8081
   test-db:
     image: mongo:latest
     ports:

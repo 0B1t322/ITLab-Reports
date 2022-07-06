@@ -145,7 +145,7 @@ func (a *App) BuildGRPC() {
 
 func (a *App) StartGRPC() {
 	a.BuildGRPC()
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", a.cfg.App.GrpcAppPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", a.cfg.App.GrpcAppPort))
 	if err != nil {
 		log.Panicf("Failed to start grpc application %v", err)
 	}
