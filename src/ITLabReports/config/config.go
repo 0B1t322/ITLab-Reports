@@ -19,6 +19,8 @@ type AppConfig struct {
 	GrpcAppPort string `default:"8081" envconfig:"ITLAB_REPORTS_APP_GRPC_PORT"`
 
 	ITLabURL string `default:"https://dev.manage.rtuitlab.dev" envconfig:"ITLAB_REPORTS_APP_ITLAB_URL"`
+
+	SalaryGRPCAddr string `default:"salary:5503" envconfig:"ITLAB_REPORTS_APP_SALARY_GRPC_ADDR"`
 }
 
 type Config struct {
