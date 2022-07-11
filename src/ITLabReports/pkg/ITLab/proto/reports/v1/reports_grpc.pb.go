@@ -23,6 +23,10 @@ type ReportsClient interface {
 	// Return report by id
 	// If report not found return REPORT_NOT_FOUND error
 	GetReport(ctx context.Context, in *GetReportReq, opts ...grpc.CallOption) (*GetReportResp, error)
+	// Return reports list without pagaination
+	GetReports(ctx context.Context, in *GetReportsReq, opts ...grpc.CallOption) (*GetReportsResp, error)
+	// Return reports list with pagaination
+	GetReportsPaginated(ctx context.Context, in *GetReportsPaginatedReq, opts ...grpc.CallOption) (*GetReportsPaginatedResp, error)
 }
 
 type reportsClient struct {
@@ -51,6 +55,24 @@ func (c *reportsClient) GetReport(ctx context.Context, in *GetReportReq, opts ..
 	return out, nil
 }
 
+func (c *reportsClient) GetReports(ctx context.Context, in *GetReportsReq, opts ...grpc.CallOption) (*GetReportsResp, error) {
+	out := new(GetReportsResp)
+	err := c.cc.Invoke(ctx, "/rtuitlab.itlab.reports.v1.Reports/GetReports", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *reportsClient) GetReportsPaginated(ctx context.Context, in *GetReportsPaginatedReq, opts ...grpc.CallOption) (*GetReportsPaginatedResp, error) {
+	out := new(GetReportsPaginatedResp)
+	err := c.cc.Invoke(ctx, "/rtuitlab.itlab.reports.v1.Reports/GetReportsPaginated", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReportsServer is the server API for Reports service.
 // All implementations must embed UnimplementedReportsServer
 // for forward compatibility
@@ -61,6 +83,10 @@ type ReportsServer interface {
 	// Return report by id
 	// If report not found return REPORT_NOT_FOUND error
 	GetReport(context.Context, *GetReportReq) (*GetReportResp, error)
+	// Return reports list without pagaination
+	GetReports(context.Context, *GetReportsReq) (*GetReportsResp, error)
+	// Return reports list with pagaination
+	GetReportsPaginated(context.Context, *GetReportsPaginatedReq) (*GetReportsPaginatedResp, error)
 	mustEmbedUnimplementedReportsServer()
 }
 
@@ -73,6 +99,12 @@ func (UnimplementedReportsServer) GetReportImplementer(context.Context, *GetRepo
 }
 func (UnimplementedReportsServer) GetReport(context.Context, *GetReportReq) (*GetReportResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReport not implemented")
+}
+func (UnimplementedReportsServer) GetReports(context.Context, *GetReportsReq) (*GetReportsResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReports not implemented")
+}
+func (UnimplementedReportsServer) GetReportsPaginated(context.Context, *GetReportsPaginatedReq) (*GetReportsPaginatedResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReportsPaginated not implemented")
 }
 func (UnimplementedReportsServer) mustEmbedUnimplementedReportsServer() {}
 
@@ -123,6 +155,42 @@ func _Reports_GetReport_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Reports_GetReports_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReportsServer).GetReports(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rtuitlab.itlab.reports.v1.Reports/GetReports",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportsServer).GetReports(ctx, req.(*GetReportsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Reports_GetReportsPaginated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportsPaginatedReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReportsServer).GetReportsPaginated(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rtuitlab.itlab.reports.v1.Reports/GetReportsPaginated",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportsServer).GetReportsPaginated(ctx, req.(*GetReportsPaginatedReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Reports_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "rtuitlab.itlab.reports.v1.Reports",
 	HandlerType: (*ReportsServer)(nil),
@@ -134,6 +202,14 @@ var _Reports_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReport",
 			Handler:    _Reports_GetReport_Handler,
+		},
+		{
+			MethodName: "GetReports",
+			Handler:    _Reports_GetReports_Handler,
+		},
+		{
+			MethodName: "GetReportsPaginated",
+			Handler:    _Reports_GetReportsPaginated_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
