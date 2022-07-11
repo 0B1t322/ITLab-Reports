@@ -33,3 +33,29 @@ func GetReportImplementerHandler(
 		),
 	)
 }
+
+ func GetReportsHandler(
+	e Endpoints,
+) gt.Handler {
+	return grpc.NewServer(
+		e.GetReports,
+		dto.DecodeGetReportsListReq,
+		dto.EncodeGetReportsResp,
+		gt.ServerBefore(
+			serverbefore.TokenFromReq,
+		),
+	)
+}
+
+ func GetReportsPaginatedHandler(
+	e Endpoints,
+) gt.Handler {
+	return grpc.NewServer(
+		e.GetReportsPaginated,
+		dto.DecodeGetReportsPaginatedReq,
+		dto.EncodeGetReportsPaginatedResp,
+		gt.ServerBefore(
+			serverbefore.TokenFromReq,
+		),
+	)
+}

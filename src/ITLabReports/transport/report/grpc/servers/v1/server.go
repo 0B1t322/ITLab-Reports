@@ -9,6 +9,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/grpc/endpoints/v1"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/grpc/handlers/v1"
 	im "github.com/RTUITLab/ITLab-Reports/transport/report/grpc/middlewares"
+	internalMiddlewares "github.com/RTUITLab/ITLab-Reports/transport/report/middlewares"
 	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
 	gt "github.com/go-kit/kit/transport/grpc"
 )
@@ -19,10 +20,13 @@ type gRPCServer struct {
 	// Handlers
 	getReport            gt.Handler
 	getReportImplementer gt.Handler
+	getReports           gt.Handler
+	getPaginatedReports  gt.Handler
 }
 
 type serverOptions struct {
-	auther       middlewares.Auther
+	auther                  middlewares.Auther
+	approvedReportsIdGetter internalMiddlewares.ApprovedReportsIdsGetter
 }
 
 type ServerOptions func(s *serverOptions)
@@ -30,6 +34,12 @@ type ServerOptions func(s *serverOptions)
 func WithAuther(a middlewares.Auther) ServerOptions {
 	return func(s *serverOptions) {
 		s.auther = a
+	}
+}
+
+func WithApprovedreportsIdGetter(a internalMiddlewares.ApprovedReportsIdsGetter) ServerOptions {
+	return func(s *serverOptions) {
+		s.approvedReportsIdGetter = a
 	}
 }
 
@@ -53,8 +63,10 @@ func NewServer(
 	)
 
 	return &gRPCServer{
-		getReport: handlers.GetReportHandler(e),
+		getReport:            handlers.GetReportHandler(e),
 		getReportImplementer: handlers.GetReportImplementerHandler(e),
+		getReports:           handlers.GetReportsHandler(e),
+		getPaginatedReports:  handlers.GetReportsPaginatedHandler(e),
 	}
 }
 
@@ -78,6 +90,25 @@ func BuildMiddlewares(
 			im.CheckUserIsReporterOrImplementerIfNotError[*dto.GetReportImplementerReq, *dto.GetReportImplementerResp](),
 			middlewares.IsSuperAdmin[*dto.GetReportImplementerReq, *dto.GetReportImplementerResp](opt.auther),
 			middlewares.IsAdmin[*dto.GetReportImplementerReq, *dto.GetReportImplementerResp](opt.auther),
+		),
+	)
+
+	ends.GetReports.AddCustomMiddlewares(
+		middlewares.Auth[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+		middlewares.RunMiddlewareIfAllFail(
+			middlewares.SetReporterAndImplementer[*dto.GetReportsReq, *dto.GetReportsResp](),
+			middlewares.IsAdmin[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+			middlewares.IsSuperAdmin[*dto.GetReportsReq, *dto.GetReportsResp](opt.auther),
+		),
+	)
+
+	ends.GetReportsPaginated.AddCustomMiddlewares(
+		middlewares.Auth[*dto.GetReportsPaginatedReq, *dto.GetReportsPaginatedResp](opt.auther),
+		internalMiddlewares.SetApprovedStateReportsIds[*dto.GetReportsPaginatedReq, *dto.GetReportsPaginatedResp](opt.approvedReportsIdGetter, opt.auther),
+		middlewares.RunMiddlewareIfAllFail(
+			middlewares.SetReporterAndImplementer[*dto.GetReportsPaginatedReq, *dto.GetReportsPaginatedResp](),
+			middlewares.IsAdmin[*dto.GetReportsPaginatedReq, *dto.GetReportsPaginatedResp](opt.auther),
+			middlewares.IsSuperAdmin[*dto.GetReportsPaginatedReq, *dto.GetReportsPaginatedResp](opt.auther),
 		),
 	)
 
@@ -110,4 +141,30 @@ func (s *gRPCServer) GetReport(
 	}
 
 	return resp.(*pb.GetReportResp), nil
+}
+
+// Return reports list without pagaination
+func (s *gRPCServer) GetReports(
+	ctx context.Context,
+	req *pb.GetReportsReq,
+) (*pb.GetReportsResp, error) {
+	_, resp, err := s.getReports.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, HandleErrors(err)
+	}
+
+	return resp.(*pb.GetReportsResp), nil
+}
+
+// Return reports list with pagaination
+func (s *gRPCServer) GetReportsPaginated(
+	ctx context.Context,
+	req *pb.GetReportsPaginatedReq,
+) (*pb.GetReportsPaginatedResp, error) {
+	_, resp, err := s.getPaginatedReports.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, HandleErrors(err)
+	}
+
+	return resp.(*pb.GetReportsPaginatedResp), nil
 }
