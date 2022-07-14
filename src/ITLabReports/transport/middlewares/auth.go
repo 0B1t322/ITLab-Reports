@@ -188,6 +188,7 @@ func (a *authJWKS) buildMiddlewares() {
 					return nil, TokenExpired
 				default:
 					level.Error(a.logger).Log("err", validErr.Error())
+					return nil, FailedToParseToken
 				}
 			} else if err != nil {
 				level.Error(a.logger).Log("err", err)
