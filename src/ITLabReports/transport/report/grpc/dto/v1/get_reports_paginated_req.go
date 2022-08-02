@@ -83,56 +83,19 @@ func DecodeGetReportsPaginatedReq(
 		},
 	}
 
-	// Limit
-	if limit := grpcReq.Pagination.GetLimit(); limit >= 1 {
-		req.Params.Limit = mo.Some(limit)
+	if pagination := grpcReq.GetPagination(); pagination != nil {
+		// Limit
+		if limit := pagination.GetLimit(); limit >= 1 {
+			req.Params.Limit = mo.Some(limit)
+		}
+
+		// Offset
+		if offset := pagination.GetOffset(); offset >= 0 {
+			req.Params.Offset = mo.Some(offset)
+		}
 	}
 
-	// Offset
-	if offset := grpcReq.Pagination.GetOffset(); offset >= 0 {
-		req.Params.Offset = mo.Some(offset)
-	}
-
-	// Decode state
-	if state := grpcReq.GetFilterParams().PaidState; state != nil {
-		req.PaidState = *state
-	} else {
-		req.PaidState = pb.GetReportsPaginatedReq_FilterParams_ALL
-	}
-
-	// Decode dateBegin
-	if dateBegin := grpcReq.FilterParams.DateBegin; dateBegin != nil {
-		date := dateBegin.AsTime()
-		req.Params.Filter.And = append(
-			req.Params.Filter.And,
-			&report.GetReportsFilterFieldsWithOrAnd{
-				GetReportsFilterFields: report.GetReportsFilterFields{
-					Date: &filter.FilterField[string]{
-						Operation: filter.GTE,
-						Value:     date.UTC().Format(time.RFC3339Nano),
-					},
-				},
-			},
-		)
-	}
-
-	// Decode dateEnd
-	if dateEnd := grpcReq.FilterParams.DateEnd; dateEnd != nil {
-		date := dateEnd.AsTime()
-		req.Params.Filter.And = append(
-			req.Params.Filter.And,
-			&report.GetReportsFilterFieldsWithOrAnd{
-				GetReportsFilterFields: report.GetReportsFilterFields{
-					Date: &filter.FilterField[string]{
-						Operation: filter.LTE,
-						Value:     date.UTC().Format(time.RFC3339Nano),
-					},
-				},
-			},
-		)
-	}
-
-	// Decode match
+	// Decode FilterParams
 	if filterParams := grpcReq.FilterParams; filterParams != nil {
 		if name := filterParams.GetNameMatch(); name != "" {
 			req.Params.Filter.Name = &filter.FilterField[string]{
@@ -153,6 +116,45 @@ func DecodeGetReportsPaginatedReq(
 				Operation: filter.EQ,
 				Value:     reporter,
 			}
+		}
+
+		// Decode state
+		if state := filterParams.PaidState; state != nil {
+			req.PaidState = *state
+		} else {
+			req.PaidState = pb.GetReportsPaginatedReq_FilterParams_ALL
+		}
+
+		// Decode dateBegin
+		if dateBegin := filterParams.DateBegin; dateBegin != nil {
+			date := dateBegin.AsTime()
+			req.Params.Filter.And = append(
+				req.Params.Filter.And,
+				&report.GetReportsFilterFieldsWithOrAnd{
+					GetReportsFilterFields: report.GetReportsFilterFields{
+						Date: &filter.FilterField[string]{
+							Operation: filter.GTE,
+							Value:     date.UTC().Format(time.RFC3339Nano),
+						},
+					},
+				},
+			)
+		}
+
+		// Decode dateEnd
+		if dateEnd := filterParams.DateEnd; dateEnd != nil {
+			date := dateEnd.AsTime()
+			req.Params.Filter.And = append(
+				req.Params.Filter.And,
+				&report.GetReportsFilterFieldsWithOrAnd{
+					GetReportsFilterFields: report.GetReportsFilterFields{
+						Date: &filter.FilterField[string]{
+							Operation: filter.LTE,
+							Value:     date.UTC().Format(time.RFC3339Nano),
+						},
+					},
+				},
+			)
 		}
 	}
 
