@@ -281,7 +281,7 @@ func TestFunc_DTO(t *testing.T) {
 		func(t *testing.T) {
 			httpReq := httptest.NewRequest(
 				"GET",
-				"/v2/reports/reports?offset=12&offset=14&limit=10&limit=15&dateBegin=2019-10-12T07:20:50Z&dateEnd=2019-10-12T07:20:50Z&sortBy=name:asc&sortBy=date:asc&match=name:dan&match=date:2019-10-12T07:20:50.30Z&match=assignees.implementer:id_1&match=assignees.reporter:id_2",
+				"/v2/reports/reports?offset=12&offset=14&limit=10&limit=15&dateBegin=2019-10-12T07:20:51Z&dateEnd=2019-10-12T07:20:52Z&sortBy=name:asc&sortBy=date:asc&match=name:dan&match=date:2019-10-12T07:20:50.30Z&match=assignees.implementer:id_1&match=assignees.reporter:id_2",
 				nil,
 			)
 
@@ -327,7 +327,7 @@ func TestFunc_DTO(t *testing.T) {
 									{
 										GetReportsFilterFields: reportdomain.GetReportsFilterFields{
 											Date: &filter.FilterField[string]{
-												Value:     "2019-10-12T07:20:50Z",
+												Value:     "2019-10-12T07:20:51Z",
 												Operation: filter.GTE,
 											},
 										},
@@ -335,7 +335,7 @@ func TestFunc_DTO(t *testing.T) {
 									{
 										GetReportsFilterFields: reportdomain.GetReportsFilterFields{
 											Date: &filter.FilterField[string]{
-												Value:     "2019-10-12T07:20:50Z",
+												Value:     "2019-10-12T07:20:52Z",
 												Operation: filter.LTE,
 											},
 										},
