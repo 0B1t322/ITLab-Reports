@@ -1,6 +1,8 @@
 package servers
 
 import (
+	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
+	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -11,6 +13,9 @@ func HandleErrors(err error) error {
 
 	var code codes.Code
 	switch {
+	// INVALID_ARGUMENT
+	case errors.Is(err, reports.ErrGetReportsBadParams):
+		code = codes.InvalidArgument
 	// Permission
 	case err == middlewares.NotAdmin, err == middlewares.NotSuperAdmin:
 		code = codes.PermissionDenied

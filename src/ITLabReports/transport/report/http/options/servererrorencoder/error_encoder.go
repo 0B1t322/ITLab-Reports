@@ -36,6 +36,7 @@ func EncodeError(ctx context.Context, err error, w http.ResponseWriter) {
 	// BadRequest 
 	case 	err == reports.ErrReportIDNotValid, errors.Is(err, reports.ErrValidationError), 
 			err == rerr.DraftIdNotValud, errors.Is(err, serr.ValidationError), 
+			errors.Is(err, reports.ErrGetReportsBadParams),
 			errors.Is(err, middlewares.ErrIncorectId):
 		statusCode = http.StatusBadRequest
 	// Confilct id checker
