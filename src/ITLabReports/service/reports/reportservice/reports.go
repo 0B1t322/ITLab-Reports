@@ -2,12 +2,14 @@ package reportservice
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/RTUITLab/ITLab-Reports/aggragate/report"
 	reportdomain "github.com/RTUITLab/ITLab-Reports/domain/report"
 	"github.com/RTUITLab/ITLab-Reports/domain/report/mongo"
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	service "github.com/RTUITLab/ITLab-Reports/service/reports"
+	"github.com/samber/lo"
 	m "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -125,12 +127,12 @@ func (r *ReportService) DeleteReport(ctx context.Context, id string) error {
 
 type UpdateReportToIReport reportdomain.UpdateReportParams
 
-func(u UpdateReportToIReport) GetName() string {
-	return u.Name.MustGetValue()
+func (u UpdateReportToIReport) GetName() string {
+	return u.Name.OrEmpty()
 }
 
 func (u UpdateReportToIReport) GetText() string {
-	return u.Text.MustGetValue()
+	return u.Text.OrEmpty()
 }
 
 func (u UpdateReportToIReport) GetReporter() string {
@@ -138,20 +140,20 @@ func (u UpdateReportToIReport) GetReporter() string {
 }
 
 func (u UpdateReportToIReport) GetImplementer() string {
-	return u.Implementer.MustGetValue()
+	return u.Implementer.OrEmpty()
 }
 
 func (u UpdateReportToIReport) Validate() error {
 	var validatorOpts []report.ReportValidateOptions
-	if u.Name.HasValue() {
+	if u.Name.IsPresent() {
 		validatorOpts = append(validatorOpts, report.WithValidateName())
 	}
 
-	if u.Text.HasValue() {
+	if u.Text.IsPresent() {
 		validatorOpts = append(validatorOpts, report.WithValidateText())
 	}
 
-	if u.Implementer.HasValue() {
+	if u.Implementer.IsPresent() {
 		validatorOpts = append(validatorOpts, report.WithValidateImplementor())
 	}
 
@@ -171,8 +173,8 @@ func (u UpdateReportToIReport) Validate() error {
 // Target errors catch by:
 // 		errors.Is(err, ErrValidationError)
 func (r *ReportService) UpdateReport(
-	ctx context.Context, 
-	id string, 
+	ctx context.Context,
+	id string,
 	params reportdomain.UpdateReportParams,
 ) (*report.Report, error) {
 	if err := report.NewReportValidator(
@@ -199,15 +201,73 @@ func (r *ReportService) UpdateReport(
 }
 
 // GetReports return reports acording to filters
-// 	don't have catchable errors
+// 	catchable errors:
+// 		ErrGetReportsBadParams as target
+// Target errors catch by:
+// 		errors.Is(err, ErrGetReportsBadParams)
 func (r *ReportService) GetReports(
-	ctx context.Context, 
+	ctx context.Context,
 	params *reportdomain.GetReportsParams,
 ) ([]*report.Report, error) {
+	if err := r.ValidateGetReportsParams(params); err != nil {
+		return nil, errors.Wrap(err, service.ErrGetReportsBadParams)
+	}
+
 	return r.ReportRepository.GetReports(
 		ctx,
 		params,
 	)
+}
+
+func (r *ReportService) ValidateGetReportsParams(
+	params *reportdomain.GetReportsParams,
+) error {
+	// Validate sort params
+	if sort := params.Filter.SortParams; len(sort) > 0 {
+		// Check that in each item only one field is set
+		// Check that not duplicated fields
+		// Check that not empty sort item
+		var (
+			isDuplicatedFields    bool
+			isMoreThanOneFieldSet bool
+			isEmptyItem           bool
+		)
+		{
+			duplicates := lo.FindDuplicates(
+				lo.Map(
+					sort,
+					func(p reportdomain.GetReportsSort, _ int) string {
+						if p.NameSort.IsPresent() && p.DateSort.IsPresent() {
+							isMoreThanOneFieldSet = true
+						} else if p.NameSort.IsAbsent() && p.DateSort.IsAbsent() {
+							isEmptyItem = true
+						}
+
+						if p.NameSort.IsPresent() {
+							return "name"
+						}
+						if p.DateSort.IsPresent() {
+							return "date"
+						}
+						return ""
+					},
+				),
+			)
+			if len(duplicates) > 0 {
+				isDuplicatedFields = true
+			}
+		}
+		if isEmptyItem {
+			return fmt.Errorf("empty sort argument")
+		}
+		if isMoreThanOneFieldSet {
+			return fmt.Errorf("only one sort field can be set in slice item")
+		}
+		if isDuplicatedFields {
+			return fmt.Errorf("you can't sort by field twice")
+		}
+	}
+	return nil
 }
 
 // CreateReport create report and return it
@@ -216,7 +276,7 @@ func (r *ReportService) GetReports(
 // Target errors catch by:
 // 		errors.Is(err, ErrValidationError)
 func (r *ReportService) CreateReport(
-	ctx context.Context, 
+	ctx context.Context,
 	model *report.Report,
 ) (*report.Report, error) {
 	if err := report.NewReportValidator().Validate(model); err != nil {
@@ -234,11 +294,10 @@ func (r *ReportService) CreateReport(
 	return created, nil
 }
 
-
 // CountReport count report according to filter and return count
 // don't have catchable errors
 func (r *ReportService) CountReports(
-	ctx	context.Context,
+	ctx context.Context,
 	filter *reportdomain.GetReportsFilterFieldsWithOrAnd,
 ) (int64, error) {
 	return r.ReportRepository.CountByFilter(
@@ -246,5 +305,3 @@ func (r *ReportService) CountReports(
 		filter,
 	)
 }
-
-

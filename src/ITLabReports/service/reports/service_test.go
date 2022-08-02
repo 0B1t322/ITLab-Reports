@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
+	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
+	"github.com/samber/mo"
 
 	"github.com/RTUITLab/ITLab-Reports/aggragate/report"
 	"github.com/RTUITLab/ITLab-Reports/config"
@@ -65,7 +66,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										Text: "some",
 									},
 									Assignees: &entAssignees.Assignees{
-										Reporter: "some_reporter",
+										Reporter:    "some_reporter",
 										Implementer: "some_implementer",
 									},
 								},
@@ -92,7 +93,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										Text: "",
 									},
 									Assignees: &entAssignees.Assignees{
-										Reporter: "some_reporter",
+										Reporter:    "some_reporter",
 										Implementer: "some_implementer",
 									},
 								},
@@ -118,7 +119,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										Text: "some",
 									},
 									Assignees: &entAssignees.Assignees{
-										Reporter: "some_reporter",
+										Reporter:    "some_reporter",
 										Implementer: "",
 									},
 								},
@@ -144,7 +145,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										Text: "some",
 									},
 									Assignees: &entAssignees.Assignees{
-										Reporter: "",
+										Reporter:    "",
 										Implementer: "some_implementer",
 									},
 								},
@@ -230,7 +231,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								"some_implementer",
 							)
 							require.NoError(t, err)
-		
+
 							created, err := service.CreateReport(
 								context.Background(),
 								model,
@@ -240,8 +241,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 							updated, err := service.UpdateReport(
 								context.Background(),
 								created.GetID(),
-								reportdomain.UpdateReportParams{
-								},
+								reportdomain.UpdateReportParams{},
 							)
 							require.NoError(t, err)
 
@@ -263,7 +263,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								"some_implementer",
 							)
 							require.NoError(t, err)
-		
+
 							created, err := service.CreateReport(
 								context.Background(),
 								model,
@@ -274,7 +274,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								context.Background(),
 								created.GetID(),
 								reportdomain.UpdateReportParams{
-									Name: *optional.NewOptional("new_name"),
+									Name: mo.Some("new_name"),
 								},
 							)
 							require.NoError(t, err)
@@ -300,7 +300,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								"some_implementer",
 							)
 							require.NoError(t, err)
-		
+
 							created, err := service.CreateReport(
 								context.Background(),
 								model,
@@ -311,7 +311,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								context.Background(),
 								created.GetID(),
 								reportdomain.UpdateReportParams{
-									Text: *optional.NewOptional("updated_text"),
+									Text: mo.Some("updated_text"),
 								},
 							)
 							require.NoError(t, err)
@@ -337,7 +337,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								"some_implementer",
 							)
 							require.NoError(t, err)
-		
+
 							created, err := service.CreateReport(
 								context.Background(),
 								model,
@@ -348,7 +348,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								context.Background(),
 								created.GetID(),
 								reportdomain.UpdateReportParams{
-									Implementer: *optional.NewOptional("new_implementer"),
+									Implementer: mo.Some("new_implementer"),
 								},
 							)
 							require.NoError(t, err)
@@ -374,7 +374,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								"some_implementer",
 							)
 							require.NoError(t, err)
-		
+
 							created, err := service.CreateReport(
 								context.Background(),
 								model,
@@ -385,9 +385,9 @@ func Service_Tests(t *testing.T, service reports.Service) {
 								context.Background(),
 								created.GetID(),
 								reportdomain.UpdateReportParams{
-									Implementer: *optional.NewOptional("new_implementer"),
-									Name: *optional.NewOptional("new_name"),
-									Text: *optional.NewOptional("new_text"),
+									Implementer: mo.Some("new_implementer"),
+									Name:        mo.Some("new_name"),
+									Text:        mo.Some("new_text"),
 								},
 							)
 							require.NoError(t, err)
@@ -440,18 +440,18 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										"some_implementer",
 									)
 									require.NoError(t, err)
-				
+
 									created, err := service.CreateReport(
 										context.Background(),
 										model,
 									)
 									require.NoError(t, err)
-		
+
 									_, err = service.UpdateReport(
 										context.Background(),
 										created.GetID(),
 										reportdomain.UpdateReportParams{
-											Name: *optional.NewOptional(""),
+											Name: mo.Some(""),
 										},
 									)
 									require.Condition(
@@ -460,7 +460,7 @@ func Service_Tests(t *testing.T, service reports.Service) {
 											return errors.Is(err, reports.ErrValidationError) && errors.Is(err, report.ErrNameEmpty)
 										},
 									)
-		
+
 								},
 							)
 
@@ -474,18 +474,18 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										"some_implementer",
 									)
 									require.NoError(t, err)
-				
+
 									created, err := service.CreateReport(
 										context.Background(),
 										model,
 									)
 									require.NoError(t, err)
-		
+
 									_, err = service.UpdateReport(
 										context.Background(),
 										created.GetID(),
 										reportdomain.UpdateReportParams{
-											Text: *optional.NewOptional(""),
+											Text: mo.Some(""),
 										},
 									)
 									require.Condition(
@@ -507,18 +507,18 @@ func Service_Tests(t *testing.T, service reports.Service) {
 										"some_implementer",
 									)
 									require.NoError(t, err)
-				
+
 									created, err := service.CreateReport(
 										context.Background(),
 										model,
 									)
 									require.NoError(t, err)
-		
+
 									_, err = service.UpdateReport(
 										context.Background(),
 										created.GetID(),
 										reportdomain.UpdateReportParams{
-											Implementer: *optional.NewOptional(""),
+											Implementer: mo.Some(""),
 										},
 									)
 									require.Condition(
@@ -596,7 +596,90 @@ func Service_Tests(t *testing.T, service reports.Service) {
 	t.Run(
 		"GetReports",
 		func(t *testing.T) {
+			t.Run(
+				"Fail",
+				func(t *testing.T) {
+					t.Run(
+						"EmptySortParams",
+						func(t *testing.T) {
+							require.Condition(
+								t,
+								func() (success bool) {
+									_, err := service.GetReports(
+										context.Background(),
+										&reportdomain.GetReportsParams{
+											Filter: &reportdomain.GetReportsFilter{
+												SortParams: []reportdomain.GetReportsSort{
+													{
+														NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+													},
+													{},
+												},
+											},
+										},
+									)
+									return errors.Is(err, reports.ErrGetReportsBadParams) && errors.Unwrap(err).Error() == "empty sort argument"
+								},
+							)
+						},
+					)
 
+					t.Run(
+						"MoreThanOneFieldSetInItem",
+						func(t *testing.T) {
+							require.Condition(
+								t,
+								func() (success bool) {
+									_, err := service.GetReports(
+										context.Background(),
+										&reportdomain.GetReportsParams{
+											Filter: &reportdomain.GetReportsFilter{
+												SortParams: []reportdomain.GetReportsSort{
+													{
+														NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+														DateSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+													},
+												},
+											},
+										},
+									)
+									return errors.Is(err, reports.ErrGetReportsBadParams) && errors.Unwrap(err).Error() == "only one sort field can be set in slice item"
+								},
+							)
+						},
+					)
+
+					t.Run(
+						"IsDuplicatedFields",
+						func(t *testing.T) {
+							require.Condition(
+								t,
+								func() (success bool) {
+									_, err := service.GetReports(
+										context.Background(),
+										&reportdomain.GetReportsParams{
+											Filter: &reportdomain.GetReportsFilter{
+												SortParams: []reportdomain.GetReportsSort{
+													{
+														NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+													},
+													{
+														DateSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+													},
+													{
+														NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+													},
+												},
+											},
+										},
+									)
+									return errors.Is(err, reports.ErrGetReportsBadParams) && errors.Unwrap(err).Error() == "you can't sort by field twice"
+								},
+							)
+						},
+					)
+				},
+			)
 		},
 	)
 }
