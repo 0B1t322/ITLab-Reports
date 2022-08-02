@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
+	"github.com/samber/mo"
 )
 
 type ExternalRESTSalaryService struct {
@@ -36,7 +36,7 @@ func NewExternalRestSalaryService(
 func (e *ExternalRESTSalaryService) GetApprovedReportsIds(
 	ctx context.Context,
 	token string,
-	userId optional.Optional[string],
+	userId mo.Option[string],
 ) ([]string, error) {
 	req, err := http.NewRequest(
 		http.MethodGet,
@@ -47,8 +47,8 @@ func (e *ExternalRESTSalaryService) GetApprovedReportsIds(
 		return nil, err
 	}
 
-	if userId.HasValue() {
-		req.URL.Query().Add("userId", userId.MustGetValue())
+	if userId.IsPresent() {
+		req.URL.Query().Add("userId", userId.MustGet())
 	}
 
 	req.Header.Add("Authorization", token)

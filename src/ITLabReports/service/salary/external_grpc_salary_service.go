@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	services "github.com/RTUITLab/ITLab/proto/salary/v1"
+	"github.com/samber/mo"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
@@ -25,14 +25,20 @@ func NewExternalGRPCSalaryService(
 func (e *ExternalGRPCSalaryService) GetApprovedReportsIds(
 	ctx context.Context,
 	token string,
-	userId optional.Optional[string],
+	UserId mo.Option[string],
 ) ([]string, error) {
 	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("Authorization", token))
-
+	var userId *string = nil
+	{
+		if UserId.IsPresent() {
+			value := UserId.MustGet()
+			userId = &value
+		}
+	}
 	resp, err := e.cleint.GetApprovedReportsId(
 		ctx,
 		&services.GetApprovedReportsIdReq{
-			UserId: userId.Value,
+			UserId: userId,
 		},
 	)
 	if err != nil {

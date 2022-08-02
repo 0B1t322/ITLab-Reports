@@ -3,7 +3,7 @@ package salary
 import (
 	"context"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
+	"github.com/samber/mo"
 )
 
 type testModeSalaryService struct{}
@@ -15,7 +15,7 @@ func NewTestModeSalaryService() SalaryService {
 func (t *testModeSalaryService) GetApprovedReportsIds(
 	ctx context.Context,
 	token string,
-	userId optional.Optional[string],
+	userId mo.Option[string],
 ) ([]string, error) {
 	return []string{}, nil
 }
