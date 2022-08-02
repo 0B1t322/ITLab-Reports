@@ -3,9 +3,9 @@ package toapprovereportsidgetter
 import (
 	"context"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/service/salary"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/middlewares"
+	"github.com/samber/mo"
 )
 
 type toApproveReportsIdGetter struct {
@@ -20,7 +20,7 @@ func (t *toApproveReportsIdGetter) GetApprovedReportsIdsForUser(userId string, t
 	return t.salaryService.GetApprovedReportsIds(
 		context.Background(),
 		token,
-		*optional.NewOptional(userId),
+		mo.Some(userId),
 	)
 }
 
@@ -28,7 +28,7 @@ func (t *toApproveReportsIdGetter) GetApprovedReportsIds(token string) ([]string
 	return t.salaryService.GetApprovedReportsIds(
 		context.Background(),
 		token,
-		*optional.NewEmptyOptional[string](),
+		mo.None[string](),
 	)
 }
 

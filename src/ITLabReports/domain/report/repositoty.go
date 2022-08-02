@@ -6,62 +6,62 @@ import (
 
 	"github.com/RTUITLab/ITLab-Reports/aggragate/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
+	"github.com/samber/mo"
 )
 
 var (
-	ErrIDIsNotValid = errors.New("ID is not valid")
+	ErrIDIsNotValid   = errors.New("ID is not valid")
 	ErrReportNotFound = errors.New("Report not found")
 )
 
 type GetReportsParams struct {
 	Filter *GetReportsFilter `swaggerignore:"true"`
 
-	Limit  optional.Optional[int64] `swaggerignore:"true"`
+	Limit mo.Option[int64] `swaggerignore:"true"`
 
-	Offset optional.Optional[int64] `swaggerignore:"true"`
+	Offset mo.Option[int64] `swaggerignore:"true"`
 }
 
 type GetReportsFilter struct {
 	GetReportsFilterFieldsWithOrAnd `swaggerignore:"true"`
 
-	GetReportsSort `swaggerignore:"true"`
+	SortParams []GetReportsSort `swaggerignore:"true"`
 }
 
 type GetReportsFilterFieldsWithOrAnd struct {
 	GetReportsFilterFields
 
-	Or	[]*GetReportsFilterFieldsWithOrAnd
+	Or  []*GetReportsFilterFieldsWithOrAnd
 	And []*GetReportsFilterFieldsWithOrAnd
 }
 
 type GetReportsFilterFields struct {
-	ReportID	*filter.FilterField[string]
+	ReportID *filter.FilterField[string]
 
-	ReportsId	*filter.FilterField[[]string]
+	ReportsId *filter.FilterField[[]string]
 
-	Name		*filter.FilterField[string]
+	Name *filter.FilterField[string]
 
-	Date		*filter.FilterField[string]
+	Date *filter.FilterField[string]
 
-	Implementer	*filter.FilterField[string]
+	Implementer *filter.FilterField[string]
 
-	Reporter	*filter.FilterField[string]
+	Reporter *filter.FilterField[string]
 }
 
 type GetReportsSort struct {
-	NameSort	optional.Optional[ordertype.OrderType]
+	NameSort mo.Option[ordertype.OrderType]
 
-	DateSort	optional.Optional[ordertype.OrderType]
+	DateSort mo.Option[ordertype.OrderType]
 }
 
 type UpdateReportParams struct {
-	Name	optional.Optional[string]
+	Name mo.Option[string]
 
-	Text	optional.Optional[string]
+	Text mo.Option[string]
 
-	Implementer optional.Optional[string]
+	Implementer mo.Option[string]
 }
 
 // ReportRepository is interface of all ReportRepositorys
@@ -74,40 +74,40 @@ type ReportRepository interface {
 		ctx context.Context,
 		id string,
 	) (*report.Report, error)
-	
+
 	// CreateReport create report and return it
 	// 	don't have catchable errors
 	CreateReport(
 		ctx context.Context,
 		report *report.Report,
 	) (*report.Report, error)
-	
+
 	// DeleteReport delete report by id
 	// 	catchable errors:
 	// 		ErrIDIsNotValid
 	// 		ErrReportNotFound
 	DeleteReport(
-		ctx	context.Context,
+		ctx context.Context,
 		id string,
 	) error
-	
+
 	// GetReports return reports acording to filters
 	// 	don't have catchable errors
 	GetReports(
 		ctx context.Context,
 		params *GetReportsParams,
 	) ([]*report.Report, error)
-	
+
 	// UpdateReport update reports by id and not nil optionals
 	// 	catchable errors:
 	// 		ErrIDIsNotValid
 	// 		ErrReportNotFound
 	UpdateReport(
-		ctx	context.Context,
-		id	string,
+		ctx context.Context,
+		id string,
 		params UpdateReportParams,
 	) (*report.Report, error)
-	
+
 	// CountByFilter count reports accroding to filter
 	// 	don't have catchable errors
 	CountByFilter(

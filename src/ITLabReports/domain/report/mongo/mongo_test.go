@@ -11,10 +11,10 @@ import (
 	domain "github.com/RTUITLab/ITLab-Reports/domain/report"
 	assigneesEntity "github.com/RTUITLab/ITLab-Reports/entity/assignees"
 	reportEntity "github.com/RTUITLab/ITLab-Reports/entity/report"
+	"github.com/samber/mo"
 
 	"github.com/RTUITLab/ITLab-Reports/domain/report/mongo"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson"
@@ -42,7 +42,7 @@ func TestFunc_Filters(t *testing.T) {
 										},
 									},
 								},
-							).Object()
+							)
 
 							expected := bson.M{
 								"name": "some",
@@ -68,7 +68,7 @@ func TestFunc_Filters(t *testing.T) {
 										},
 									},
 								},
-							).Object()
+							)
 
 							expected := bson.M{
 								"name": bson.M{
@@ -103,7 +103,7 @@ func TestFunc_Filters(t *testing.T) {
 										},
 									},
 								},
-							).Object()
+							)
 
 							expected := bson.M{
 								"date": date,
@@ -135,7 +135,7 @@ func TestFunc_Filters(t *testing.T) {
 										},
 									},
 								},
-							).Object()
+							)
 
 							expected := bson.M{
 								"_id": id,
@@ -164,7 +164,7 @@ func TestFunc_Filters(t *testing.T) {
 										},
 									},
 								},
-							).Object()
+							)
 
 							expected := bson.M{
 								"_id": bson.M{
@@ -197,7 +197,7 @@ func TestFunc_Filters(t *testing.T) {
 										},
 									},
 								},
-							).Object()
+							)
 
 							expected := bson.M{
 								"_id": bson.M{
@@ -265,7 +265,7 @@ func TestFunc_Filters(t *testing.T) {
 						},
 					},
 				},
-			).Object()
+			)
 
 			expected := bson.M{
 				"$and": bson.A{
@@ -310,8 +310,10 @@ func TestFunc_Sort(t *testing.T) {
 		"Name",
 		func(t *testing.T) {
 			actual := m.BuildSort(
-				&domain.GetReportsSort{
-					NameSort: *optional.NewOptional[ordertype.OrderType](ordertype.ASC),
+				[]domain.GetReportsSort{
+					{
+						NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+					},
 				},
 			)
 
@@ -331,8 +333,10 @@ func TestFunc_Sort(t *testing.T) {
 		"Date",
 		func(t *testing.T) {
 			actual := m.BuildSort(
-				&domain.GetReportsSort{
-					DateSort: *optional.NewOptional[ordertype.OrderType](ordertype.DESC),
+				[]domain.GetReportsSort{
+					{
+						DateSort: mo.Some[ordertype.OrderType](ordertype.DESC),
+					},
 				},
 			)
 
@@ -344,6 +348,47 @@ func TestFunc_Sort(t *testing.T) {
 				t,
 				expected,
 				actual,
+			)
+		},
+	)
+
+	t.Run(
+		"Both with order",
+		func(t *testing.T) {
+			require.Equal(
+				t,
+				bson.D{
+					{"name", 1},
+					{"date", -1},
+				},
+				m.BuildSort(
+					[]domain.GetReportsSort{
+						{
+							NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+						},
+						{
+							DateSort: mo.Some[ordertype.OrderType](ordertype.DESC),
+						},
+					},
+				),
+			)
+
+			require.Equal(
+				t,
+				bson.D{
+					{"date", -1},
+					{"name", 1},
+				},
+				m.BuildSort(
+					[]domain.GetReportsSort{
+						{
+							DateSort: mo.Some[ordertype.OrderType](ordertype.DESC),
+						},
+						{
+							NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+						},
+					},
+				),
 			)
 		},
 	)
@@ -601,7 +646,7 @@ func TestFunc_MongoRepository(t *testing.T) {
 								context.Background(),
 								created.Report.ID,
 								domain.UpdateReportParams{
-									Name: *optional.NewOptional(newName),
+									Name: mo.Some(newName),
 								},
 							)
 							require.NoError(t, err)
@@ -649,9 +694,9 @@ func TestFunc_MongoRepository(t *testing.T) {
 								context.Background(),
 								created.Report.ID,
 								domain.UpdateReportParams{
-									Name: *optional.NewOptional(newName),
-									Text: *optional.NewOptional(newText),
-									Implementer: *optional.NewOptional(newImplementer),
+									Name: mo.Some(newName),
+									Text: mo.Some(newText),
+									Implementer: mo.Some(newImplementer),
 								},
 							)
 							require.NoError(t, err)

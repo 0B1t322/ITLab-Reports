@@ -9,8 +9,7 @@ import (
 	modelAssignes "github.com/RTUITLab/ITLab-Reports/entity/assignees"
 	modelReport "github.com/RTUITLab/ITLab-Reports/entity/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/mongobuildertofilter"
-	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/ordertypetomongo"
-	builder "github.com/RTUITLab/ITLab-Reports/pkg/dialect/mongo"
+	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/ordertypetosortorder"
 	"github.com/sirupsen/logrus"
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,6 +19,11 @@ import (
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 
 	_ "github.com/RTUITLab/ITLab-Reports/migrations/mongo"
+
+	"github.com/0B1t322/MongoBuilder/operators/query"
+	"github.com/0B1t322/MongoBuilder/operators/sort"
+	"github.com/0B1t322/MongoBuilder/operators/update"
+	"github.com/0B1t322/MongoBuilder/utils"
 )
 
 type Report = modelReport.Report
@@ -175,8 +179,7 @@ func (m *MongoRepository) GetReport(
 	{
 		sr := m.reports.FindOne(
 			ctx,
-			builder.P().
-				EQ("_id", objId),
+			query.EQField("_id", objId),
 		)
 
 		if err := sr.Err(); err == mongo.ErrNoDocuments {
@@ -224,7 +227,7 @@ func (m *MongoRepository) DeleteReport(
 
 	result, err := m.reports.DeleteOne(
 		ctx,
-		builder.P().EQ("_id", objId),
+		query.EQField("_id", objId),
 	)
 	if err != nil {
 		return err
@@ -239,8 +242,8 @@ func (m *MongoRepository) DeleteReport(
 
 func (m *MongoRepository) BuildFilters(
 	filter *domain.GetReportsFilterFieldsWithOrAnd,
-) *builder.Predicate {
-	b := builder.P()
+) bson.M {
+	b := bson.M{}
 
 	if filter == nil {
 		return b
@@ -248,8 +251,8 @@ func (m *MongoRepository) BuildFilters(
 
 	if filter.Name != nil {
 		filter.Name.BuildTo(
-			mongobuildertofilter.New[string](
-				b,
+			mongobuildertofilter.NewBuilderQueryAdapter[string](
+				&b,
 				"name",
 			),
 		)
@@ -257,44 +260,50 @@ func (m *MongoRepository) BuildFilters(
 
 	if filter.ReportID != nil {
 		filter.ReportID.BuildTo(
-			mongobuildertofilter.New(
-				b,
+			mongobuildertofilter.NewBuilderQueryAdapter(
+				&b,
 				"_id",
-				mongobuildertofilter.WithFieldFormatter(
-					mongobuildertofilter.StringIdMarshaller(),
-				),
+				mongobuildertofilter.
+							NewBuilderQueryAdapterOptions[string]().
+							WithFieldFormatter(
+								mongobuildertofilter.StringIdMarshaller(),
+							),
 			),
 		)
 	}
 
 	if filter.ReportsId != nil {
 		filter.ReportsId.BuildTo(
-			mongobuildertofilter.New(
-				b,
+			mongobuildertofilter.NewBuilderQueryAdapter(
+				&b,
 				"_id",
-				mongobuildertofilter.WithFieldFormatter(
-					mongobuildertofilter.SliceIdMarshaller(),
-				),
+				mongobuildertofilter.
+					NewBuilderQueryAdapterOptions[[]string]().
+					WithFieldFormatter(
+						mongobuildertofilter.SliceIdMarshaller(),
+					),
 			),
 		)
 	}
 
 	if filter.Date != nil {
 		filter.Date.BuildTo(
-			mongobuildertofilter.New(
-				b,
+			mongobuildertofilter.NewBuilderQueryAdapter(
+				&b,
 				"date",
-				mongobuildertofilter.WithFieldFormatter(
-					mongobuildertofilter.FieldToTime[string](),
-				),
+				mongobuildertofilter.
+					NewBuilderQueryAdapterOptions[string]().
+					WithFieldFormatter(
+						mongobuildertofilter.FieldToTimeMarshaller[string](),
+					),
 			),
 		)
 	}
 
 	if filter.Implementer != nil {
 		filter.Implementer.BuildTo(
-			mongobuildertofilter.New[string](
-				b,
+			mongobuildertofilter.NewBuilderQueryAdapter[string](
+				&b,
 				"assignees.implementer",
 			),
 		)
@@ -302,34 +311,40 @@ func (m *MongoRepository) BuildFilters(
 
 	if filter.Reporter != nil {
 		filter.Reporter.BuildTo(
-			mongobuildertofilter.New[string](
-				b,
+			mongobuildertofilter.NewBuilderQueryAdapter[string](
+				&b,
 				"assignees.reporter",
 			),
 		)
 	}
 
 	if filter.Or != nil {
-		b.Or(
-			func() (preds []*builder.Predicate) {
-				for _, f := range filter.Or {
-					preds = append(preds, m.BuildFilters(f))
-				}
-
-				return preds
-			}()...,
+		b = utils.MergeBsonM(
+			b,
+			query.Or(
+				func() (preds []bson.M) {
+					for _, f := range filter.Or {
+						preds = append(preds, m.BuildFilters(f))
+					}
+					
+					return preds
+				}()...,
+			),
 		)
 	}
 
 	if filter.And != nil {
-		b.And(
-			func() (preds []*builder.Predicate) {
-				for _, f := range filter.And {
-					preds = append(preds, m.BuildFilters(f))
-				}
-
-				return preds
-			}()...,
+		b = utils.MergeBsonM(
+			b,
+			query.And(
+				func() (preds []bson.M) {
+					for _, f := range filter.And {
+						preds = append(preds, m.BuildFilters(f))
+					}
+					
+					return preds
+				}()...,
+			),
 		)
 	}
 
@@ -341,41 +356,51 @@ func (m *MongoRepository) BuildFindOptions(
 	params	*domain.GetReportsParams,
 ) *options.FindOptions {
 	opt := options.Find().
-				SetSort(m.BuildSort(&params.Filter.GetReportsSort))
+				SetSort(m.BuildSort(params.Filter.SortParams))
 
-	if params.Limit.HasValue() {
-		opt.SetLimit(params.Limit.MustGetValue())
+	if params.Limit.IsPresent() {
+		opt.SetLimit(params.Limit.MustGet())
 	}
 
-	if params.Offset.HasValue() {
-		opt.SetSkip(params.Offset.MustGetValue())
+	if params.Offset.IsPresent() {
+		opt.SetSkip(params.Offset.MustGet())
 	}
 
 	return opt
 }
 
 func (m *MongoRepository) BuildSort(
-	sort *domain.GetReportsSort,
+	sortParams []domain.GetReportsSort,
 ) any {
-	mgSort := bson.D{}
-
-	if sort == nil {
-		return mgSort
+	if len(sortParams) == 0 {
+		return nil
 	}
-	
-	if sort.DateSort.HasValue() {
-		if order := ordertypetomongo.ToMongoOrderType(sort.DateSort.MustGetValue()); order != 0 {
-			mgSort = append(mgSort, bson.E{Key: "date", Value: order})
+
+	sortArgs := []sort.SortArger{}
+	{
+		for _, s := range sortParams {
+			if s.NameSort.IsPresent() {
+				sortArgs = append(
+					sortArgs, 
+					sort.SortArg(
+						"name",
+						ordertypetosortorder.ToSortOrder(s.NameSort.MustGet()),
+					),
+				)
+			}
+
+			if s.DateSort.IsPresent() {
+				sortArgs = append(
+					sortArgs, 
+					sort.SortArg(
+						"date",
+						ordertypetosortorder.ToSortOrder(s.DateSort.MustGet()),
+					),
+				)
+			}
 		}
 	}
-
-	if sort.NameSort.HasValue() {
-		if order := ordertypetomongo.ToMongoOrderType(sort.NameSort.MustGetValue()); order != 0 {
-			mgSort = append(mgSort, bson.E{Key: "name", Value: order})
-		}
-	}
-
-	return mgSort
+	return sort.Sort(sortArgs...)["$sort"]
 }
 
 func (m *MongoRepository) GetReports(
@@ -409,12 +434,36 @@ func (m *MongoRepository) GetReports(
 	return reports, nil
 }
 
-func (m *MongoRepository) BuildUpdateFields(params domain.UpdateReportParams) *builder.SetBuidler {
-	return builder.Set().
-			SetFieldIf("name", params.Name.MustGetValue(), func() bool {return params.Name.HasValue()}).
-			SetFieldIf("text", params.Text.MustGetValue(), func() bool {return params.Text.HasValue()}).
-			SetFieldIf("assignees.implementer", params.Implementer.MustGetValue(), func() bool {return params.Implementer.HasValue()}).
-			SetFieldIf("date", time.Now().UTC(), func() bool {return params.Name.HasValue() || params.Implementer.HasValue() || params.Text.HasValue()})
+func (m *MongoRepository) BuildUpdateFields(params domain.UpdateReportParams) bson.M {
+	var updateArgs []update.SetArger
+	{
+		if params.Name.IsPresent() {
+			updateArgs = append(
+				updateArgs,
+				update.SetArg("name", params.Name.MustGet()),
+			)
+		}
+
+		if params.Text.IsPresent() {
+			updateArgs = append(
+				updateArgs,
+				update.SetArg("text", params.Text.MustGet()),
+			)
+		}
+
+		if params.Implementer.IsPresent() {
+			updateArgs = append(
+				updateArgs,
+				update.SetArg("assignees.implementer", params.Implementer.MustGet()),
+			)
+		}
+	}
+	if len(updateArgs) == 0 {
+		return bson.M{"$set": bson.M{}}
+	}
+	return update.Set(
+		updateArgs...,
+	)
 }
 
 func (m *MongoRepository) UpdateReport(
@@ -429,7 +478,7 @@ func (m *MongoRepository) UpdateReport(
 
 	ur, err := m.reports.UpdateOne(
 		ctx,
-		builder.EQ("_id", mgId),
+		query.EQField("_id", mgId),
 		m.BuildUpdateFields(params),
 	)
 	if err != nil {
