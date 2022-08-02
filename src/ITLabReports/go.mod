@@ -16,7 +16,7 @@ require (
 	github.com/swaggo/http-swagger v1.2.6
 	github.com/swaggo/swag v1.8.1
 	github.com/xakep666/mongo-migrate v0.2.1
-	go.mongodb.org/mongo-driver v1.9.0
+	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 )
 
@@ -29,6 +29,8 @@ require (
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/spec v0.20.5 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -37,6 +39,8 @@ require (
 	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/samber/lo v1.27.0 // indirect
+	github.com/samber/mo v1.0.1 // indirect
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
@@ -50,7 +54,7 @@ require (
 	golang.org/x/tools v0.1.11-0.20220513164230-dfee1649af67 // indirect
 	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require github.com/0B1t322/QueryParser v0.1.0
@@ -58,6 +62,7 @@ require github.com/0B1t322/QueryParser v0.1.0
 // Replace for proto package
 
 require (
+	github.com/0B1t322/MongoBuilder v0.1.5
 	github.com/RTUITLab/ITLab v1.0.0
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
