@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/RTUITLab/ITLab-Reports/domain/report"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
 	"github.com/clarketm/json"
 	"github.com/gorilla/mux"
+	"github.com/samber/mo"
 )
 
 type UpdateDraftReq struct {
@@ -33,27 +33,27 @@ func (u *UpdateDraftReq) GetID() string {
 }
 
 func (u *UpdateDraftReq) ToEndpointReq() *reqresp.UpdateReportReq {
-	name := optional.NewEmptyOptional[string]()
+	name := mo.None[string]()
 	if u.Name != "" {
-		name.SetValue(u.Name)
+		name = mo.Some(u.Name)
 	}
 
-	text := optional.NewEmptyOptional[string]()
+	text := mo.None[string]()
 	if u.Text != "" {
-		text.SetValue(u.Text)
+		text = mo.Some(u.Text)
 	}
 
-	implementer := optional.NewEmptyOptional[string]()
+	implementer := mo.None[string]()
 	if u.Implementer != "" {
-		implementer.SetValue(u.Implementer)
+		implementer = mo.Some(u.Implementer)
 	}
 
 	return &reqresp.UpdateReportReq{
 		ID: u.ID,
 		Params: report.UpdateReportParams{
-			Name:        *name,
-			Text:        *text,
-			Implementer: *implementer,
+			Name:        name,
+			Text:        text,
+			Implementer: implementer,
 		},
 	}
 }

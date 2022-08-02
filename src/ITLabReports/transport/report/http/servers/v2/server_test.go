@@ -9,7 +9,6 @@ import (
 	reportdomain "github.com/RTUITLab/ITLab-Reports/domain/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/toapprovereportsidgetter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/RTUITLab/ITLab-Reports/service/reports/reportservice"
 	"github.com/RTUITLab/ITLab-Reports/service/salary"
@@ -20,6 +19,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/endpoints/v2"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/http/servers/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/samber/mo"
 	"github.com/stretchr/testify/require"
 )
 
@@ -179,11 +179,9 @@ func TestFunc_Server(t *testing.T) {
 
 									req := &dto.GetReportsReq{
 										Query: dto.GetReportsQuery{
-											ApprovedState: dto.Approved,
+											ApprovedState: dto.Paid,
 											Params: &reportdomain.GetReportsParams{
-												Filter: &reportdomain.GetReportsFilter{
-
-												},
+												Filter: &reportdomain.GetReportsFilter{},
 											},
 										},
 									}
@@ -204,11 +202,9 @@ func TestFunc_Server(t *testing.T) {
 
 									req := &dto.GetReportsReq{
 										Query: dto.GetReportsQuery{
-											ApprovedState: dto.Approved,
+											ApprovedState: dto.Paid,
 											Params: &reportdomain.GetReportsParams{
-												Filter: &reportdomain.GetReportsFilter{
-													
-												},
+												Filter: &reportdomain.GetReportsFilter{},
 											},
 										},
 									}
@@ -234,11 +230,9 @@ func TestFunc_Server(t *testing.T) {
 
 									req := &dto.GetReportsReq{
 										Query: dto.GetReportsQuery{
-											ApprovedState: dto.NotApproved,
+											ApprovedState: dto.NotPaid,
 											Params: &reportdomain.GetReportsParams{
-												Filter: &reportdomain.GetReportsFilter{
-													
-												},
+												Filter: &reportdomain.GetReportsFilter{},
 											},
 										},
 									}
@@ -259,11 +253,9 @@ func TestFunc_Server(t *testing.T) {
 
 									req := &dto.GetReportsReq{
 										Query: dto.GetReportsQuery{
-											ApprovedState: dto.NotApproved,
+											ApprovedState: dto.NotPaid,
 											Params: &reportdomain.GetReportsParams{
-												Filter: &reportdomain.GetReportsFilter{
-													
-												},
+												Filter: &reportdomain.GetReportsFilter{},
 											},
 										},
 									}
@@ -297,16 +289,20 @@ func TestFunc_DTO(t *testing.T) {
 				context.Background(),
 				httpReq,
 			)
-			require.NoError(t, err)	
+			require.NoError(t, err)
 			expect := &dto.GetReportsReq{
 				Query: dto.GetReportsQuery{
 					Params: &reportdomain.GetReportsParams{
-						Limit:  *optional.NewOptional[int64](10),
-						Offset: *optional.NewOptional[int64](12),
+						Limit:  mo.Some[int64](10),
+						Offset: mo.Some[int64](12),
 						Filter: &reportdomain.GetReportsFilter{
-							GetReportsSort: reportdomain.GetReportsSort{
-								NameSort: *optional.NewOptional[ordertype.OrderType](ordertype.ASC),
-								DateSort: *optional.NewOptional[ordertype.OrderType](ordertype.ASC),
+							SortParams: []reportdomain.GetReportsSort{
+								{
+									NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+								},
+								{
+									DateSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+								},
 							},
 							GetReportsFilterFieldsWithOrAnd: reportdomain.GetReportsFilterFieldsWithOrAnd{
 								GetReportsFilterFields: reportdomain.GetReportsFilterFields{

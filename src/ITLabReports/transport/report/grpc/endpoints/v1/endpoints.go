@@ -10,6 +10,7 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/grpc/utils"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
 	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
+	"github.com/RTUITLab/ITLab/proto/shared"
 )
 
 type GetReport = endpoint.Endpoint[*dto.GetReportReq, *dto.GetReportResp]
@@ -41,7 +42,7 @@ func makeGetReportEndpoint(
 	return func(
 		ctx context.Context,
 		req *dto.GetReportReq,
-	) (responce *dto.GetReportResp, err error) {
+	) (response *dto.GetReportResp, err error) {
 		resp, err := e.GetReport(
 			ctx,
 			req.ToEndpointReq(),
@@ -69,7 +70,7 @@ func makeGetReportImplementerEndpoint(
 	return func(
 		ctx context.Context,
 		req *dto.GetReportImplementerReq,
-	) (responce *dto.GetReportImplementerResp, err error) {
+	) (response *dto.GetReportImplementerResp, err error) {
 		resp, err := e.GetReport(
 			ctx,
 			req.ToEndpointReq(),
@@ -105,7 +106,7 @@ func makeGetReports(
 	return func(
 		ctx context.Context,
 		req *dto.GetReportsReq,
-	) (responce *dto.GetReportsResp, err error) {
+	) (response *dto.GetReportsResp, err error) {
 		resp, err := e.GetReports(
 			ctx,
 			req.ToEndpointReq(),
@@ -123,7 +124,7 @@ func makeGetReportsPaginated(
 	return func(
 		ctx context.Context,
 		req *dto.GetReportsPaginatedReq,
-	) (responce *dto.GetReportsPaginatedResp, err error) {
+	) (response *dto.GetReportsPaginatedResp, err error) {
 		resp, err := e.GetReports(
 			ctx,
 			req.ToEndpointReq(),
@@ -138,29 +139,33 @@ func makeGetReportsPaginated(
 				Params: &req.Params.Filter.GetReportsFilterFieldsWithOrAnd,
 			},
 		)
-		responce = &dto.GetReportsPaginatedResp{}
+		response = &dto.GetReportsPaginatedResp{}
 		{
-			responce.Offset = 0
-			responce.Limit = 0
-			responce.Count = int32(len(resp.Reports))
-			responce.TotalResult = int32(countReport.Count)
-			if req.Params.Limit.HasValue() {
-				responce.Limit = int32(req.Params.Limit.MustGetValue())
-			}
+			paginationInfo := &shared.PaginationInfo{}
+			{
+				paginationInfo.Offset = 0
+				paginationInfo.Limit = 0
+				paginationInfo.Count = int64(len(resp.Reports))
+				paginationInfo.TotalResult = countReport.Count
+				if req.Params.Limit.IsPresent() {
+					paginationInfo.Limit = req.Params.Limit.MustGet()
+				}
 
-			if req.Params.Offset.HasValue() {
-				responce.Offset = int32(req.Params.Offset.MustGetValue())
-			}
+				if req.Params.Offset.IsPresent() {
+					paginationInfo.Offset = req.Params.Offset.MustGet()
+				}
 
-			responce.HasMore = false
-			if responce.Limit != 0 && responce.TotalResult - responce.Offset -  responce.Limit > 0 {
-				responce.HasMore = true
+				paginationInfo.HasMore = false
+				if paginationInfo.Limit != 0 && paginationInfo.TotalResult-paginationInfo.Offset-paginationInfo.Limit > 0 {
+					paginationInfo.HasMore = true
+				}
 			}
+			response.PaginationInfo = paginationInfo
 
 			for _, r := range resp.Reports {
-				responce.Reports = append(responce.Reports, utils.ReportToPBType(r))
+				response.Reports = append(response.Reports, utils.ReportToPBType(r))
 			}
 		}
-		return responce, nil
+		return response, nil
 	}
 }

@@ -6,9 +6,9 @@ import (
 
 	"github.com/RTUITLab/ITLab-Reports/domain/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
+	"github.com/samber/mo"
 )
 
 type GetDraftsReq struct {
@@ -31,8 +31,10 @@ func (g *GetDraftsReq) ToEndpointReq() *reqresp.GetReportsReq {
 						},
 					},
 				},
-				GetReportsSort: report.GetReportsSort{
-					DateSort: *optional.NewOptional[ordertype.OrderType](ordertype.ASC),
+				SortParams: []report.GetReportsSort{
+					{
+						DateSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+					},
 				},
 			},
 		},

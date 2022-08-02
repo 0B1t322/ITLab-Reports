@@ -5,9 +5,9 @@ import (
 
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
 	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
+	"github.com/samber/mo"
 
 	"github.com/RTUITLab/ITLab-Reports/domain/report"
-	"github.com/RTUITLab/ITLab-Reports/pkg/optional"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 )
 
@@ -35,9 +35,17 @@ func (g *GetReportsReq) ToEndpointReq() *reqresp.GetReportsReq {
 
 	switch g.SortedBy {
 	case "name":
-		req.Params.Filter.NameSort = *optional.NewOptional[ordertype.OrderType](ordertype.ASC)
+		req.Params.Filter.SortParams = []report.GetReportsSort{
+			{
+				NameSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+			},
+		}
 	case "date":
-		req.Params.Filter.DateSort = *optional.NewOptional[ordertype.OrderType](ordertype.ASC)
+		req.Params.Filter.SortParams = []report.GetReportsSort{
+			{
+				DateSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+			},
+		}
 	}
 
 	if g.Implementer != "" && g.Reporter != "" {

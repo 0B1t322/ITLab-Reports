@@ -10,11 +10,12 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/transport/report/grpc/utils"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
 	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
+	"github.com/samber/mo"
 )
 
 type GetReportsPaginatedReq struct {
 	Params        *report.GetReportsParams
-	ApprovedState pb.GetReportsPaginatedReq_ApprovedState
+	PaidState pb.GetReportsPaginatedReq_FilterParams_PaidState
 }
 
 func (g *GetReportsPaginatedReq) ToEndpointReq() *reqresp.GetReportsReq {
@@ -24,7 +25,7 @@ func (g *GetReportsPaginatedReq) ToEndpointReq() *reqresp.GetReportsReq {
 }
 
 func (g *GetReportsPaginatedReq) IsOnlyApprovedReports() bool {
-	return g.ApprovedState == pb.GetReportsPaginatedReq_APPROVED
+	return g.PaidState == pb.GetReportsPaginatedReq_FilterParams_PAID
 }
 
 func (g *GetReportsPaginatedReq) SetOnlyApprovedReports(ids ...string) {
@@ -35,7 +36,7 @@ func (g *GetReportsPaginatedReq) SetOnlyApprovedReports(ids ...string) {
 }
 
 func (g *GetReportsPaginatedReq) IsOnlyNotApprovedReports() bool {
-	return g.ApprovedState == pb.GetReportsPaginatedReq_NOT_APPROVED
+	return g.PaidState == pb.GetReportsPaginatedReq_FilterParams_NOT_PAID
 }
 
 func (g *GetReportsPaginatedReq) SetOnlyNotApprovedReports(ids ...string) {
@@ -83,25 +84,25 @@ func DecodeGetReportsPaginatedReq(
 	}
 
 	// Limit
-	if limit := grpcReq.GetLimit(); limit >= 1 {
-		req.Params.Limit.SetValue(int64(limit))
+	if limit := grpcReq.Pagination.GetLimit(); limit >= 1 {
+		req.Params.Limit = mo.Some(limit)
 	}
 
 	// Offset
-	if offset := grpcReq.GetOffset(); offset >= 0 {
-		req.Params.Offset.SetValue(int64(offset))
+	if offset := grpcReq.Pagination.GetOffset(); offset >= 0 {
+		req.Params.Offset = mo.Some(offset)
 	}
 
 	// Decode state
-	if state := grpcReq.ApprovedState; state != nil {
-		req.ApprovedState = *state
+	if state := grpcReq.GetFilterParams().PaidState; state != nil {
+		req.PaidState = *state
 	} else {
-		req.ApprovedState = pb.GetReportsPaginatedReq_ALL
+		req.PaidState = pb.GetReportsPaginatedReq_FilterParams_ALL
 	}
 
 	// Decode dateBegin
-	if grpcReq.DateBegin != nil {
-		date := grpcReq.DateBegin.AsTime()
+	if dateBegin := grpcReq.FilterParams.DateBegin; dateBegin != nil {
+		date := dateBegin.AsTime()
 		req.Params.Filter.And = append(
 			req.Params.Filter.And,
 			&report.GetReportsFilterFieldsWithOrAnd{
@@ -116,8 +117,8 @@ func DecodeGetReportsPaginatedReq(
 	}
 
 	// Decode dateEnd
-	if grpcReq.DateEnd != nil {
-		date := grpcReq.DateEnd.AsTime()
+	if dateEnd := grpcReq.FilterParams.DateEnd; dateEnd != nil {
+		date := dateEnd.AsTime()
 		req.Params.Filter.And = append(
 			req.Params.Filter.And,
 			&report.GetReportsFilterFieldsWithOrAnd{
@@ -132,29 +133,22 @@ func DecodeGetReportsPaginatedReq(
 	}
 
 	// Decode match
-	if match := grpcReq.MatchParams; match != nil {
-		if name := match.GetName(); name != "" {
+	if filterParams := grpcReq.FilterParams; filterParams != nil {
+		if name := filterParams.GetNameMatch(); name != "" {
 			req.Params.Filter.Name = &filter.FilterField[string]{
 				Operation: filter.LIKE,
 				Value:     name,
 			}
 		}
 
-		if date := match.GetDate(); date != nil {
-			req.Params.Filter.Date = &filter.FilterField[string]{
-				Operation: filter.EQ,
-				Value:     date.AsTime().UTC().Format(time.RFC3339Nano),
-			}
-		}
-
-		if implementer := match.GetImplementer(); implementer != "" {
+		if implementer := filterParams.GetImplementerId(); implementer != "" {
 			req.Params.Filter.Implementer = &filter.FilterField[string]{
 				Operation: filter.EQ,
 				Value:     implementer,
 			}
 		}
 
-		if reporter := match.GetReporter(); reporter != "" {
+		if reporter := filterParams.GetReporterId(); reporter != "" {
 			req.Params.Filter.Reporter = &filter.FilterField[string]{
 				Operation: filter.EQ,
 				Value:     reporter,
@@ -163,17 +157,35 @@ func DecodeGetReportsPaginatedReq(
 	}
 
 	// Decode sort
-	if sort := grpcReq.SortParams; sort != nil {
-		if sort.Name != nil {
-			req.Params.Filter.NameSort.SetValue(utils.OrderTypeFromGRPC(*sort.Name))
+	if sort := grpcReq.OrderParams; sort != nil {
+		var sortArgs []report.GetReportsSort
+		{
+			for _, sortField := range sort {
+				if sortField.Field == pb.GetReportsPaginatedReq_OrderParams_DATE {
+					sortArgs = append(
+						sortArgs, 
+						report.GetReportsSort{
+							DateSort: mo.Some(utils.OrderTypeFromGRPC(sortField.Ordering)),
+						},
+					)
+				}
+				if sortField.Field == pb.GetReportsPaginatedReq_OrderParams_NAME {
+					sortArgs = append(
+						sortArgs, 
+						report.GetReportsSort{
+							NameSort: mo.Some(utils.OrderTypeFromGRPC(sortField.Ordering)),
+						},
+					)
+				}
+			}
 		}
-
-		if sort.Date != nil {
-			req.Params.Filter.DateSort.SetValue(utils.OrderTypeFromGRPC(*sort.Date))
-		}
-
+		req.Params.Filter.SortParams = sortArgs
 	} else {
-		req.Params.Filter.DateSort.SetValue(ordertype.ASC)
+		req.Params.Filter.SortParams = []report.GetReportsSort{
+			{
+				DateSort: mo.Some[ordertype.OrderType](ordertype.ASC),
+			},
+		}
 	}
 
 	return req, nil

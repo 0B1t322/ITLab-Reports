@@ -14,19 +14,20 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/RTUITLab/ITLab-Reports/transport/report/reqresp"
+	"github.com/samber/mo"
 )
 
-type ApprovedState string
+type PaidState string
 
 const (
-	Approved    ApprovedState = "approved"
-	NotApproved ApprovedState = "notApproved"
+	Paid    PaidState = "paid"
+	NotPaid PaidState = "notPaid"
 )
 
 type GetReportsQuery struct {
 	Params *report.GetReportsParams
 
-	ApprovedState ApprovedState
+	ApprovedState PaidState
 }
 
 func (g *GetReportsQuery) NewParser() *queryparser.Parser {
@@ -62,7 +63,7 @@ func (g *GetReportsQuery) ApprovedStateParseSchema() queryparser.ParseSchemaItem
 				return nil, nil
 			}
 			value := values[0]
-			g.ApprovedState = ApprovedState(value)
+			g.ApprovedState = PaidState(value)
 
 			return nil, nil
 		},
@@ -121,7 +122,7 @@ func (g *GetReportsQuery) OffsetParseSchema() queryparser.ParseSchemaItem {
 
 			offset, err := strconv.ParseInt(strOffset, 10, 64)
 			if err == nil && offset >= 0 {
-				g.Params.Offset.SetValue(offset)
+				g.Params.Offset = mo.Some(offset)
 			}
 
 			return nil, nil
@@ -143,7 +144,7 @@ func (g *GetReportsQuery) LimitParseSchema() queryparser.ParseSchemaItem {
 
 			limit, err := strconv.ParseInt(strLimit, 10, 64)
 			if err == nil && limit >= 1 {
-				g.Params.Limit.SetValue(limit)
+				g.Params.Limit = mo.Some(limit)
 			}
 
 			return nil, nil
@@ -196,9 +197,19 @@ func (g *GetReportsQuery) SortByParseSchema() queryparser.ParseSchemaItem {
 func (g *GetReportsQuery) SetSortField(field string, order ordertype.OrderType) {
 	switch field {
 	case "date":
-		g.Params.Filter.DateSort.SetValue(order)
+		g.Params.Filter.SortParams = append(
+			g.Params.Filter.SortParams,
+			report.GetReportsSort{
+				DateSort: mo.Some(order),
+			},
+		)
 	case "name":
-		g.Params.Filter.NameSort.SetValue(order)
+		g.Params.Filter.SortParams = append(
+			g.Params.Filter.SortParams,
+			report.GetReportsSort{
+				NameSort: mo.Some(order),
+			},
+		)
 	}
 }
 
@@ -239,7 +250,7 @@ type GetReportsReq struct {
 }
 
 func (g *GetReportsReq) IsOnlyApprovedReports() bool {
-	return g.Query.ApprovedState == Approved
+	return g.Query.ApprovedState == Paid
 }
 
 func (g *GetReportsReq) SetOnlyApprovedReports(ids ...string) {
@@ -250,7 +261,7 @@ func (g *GetReportsReq) SetOnlyApprovedReports(ids ...string) {
 }
 
 func (g *GetReportsReq) IsOnlyNotApprovedReports() bool {
-	return g.Query.ApprovedState == NotApproved
+	return g.Query.ApprovedState == NotPaid
 }
 
 func (g *GetReportsReq) SetOnlyNotApprovedReports(ids ...string) {

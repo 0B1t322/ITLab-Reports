@@ -52,12 +52,12 @@ func makeGetReportsEndpoint(
 		count := len(reports.Reports)
 		totalResult := countReport.Count
 
-		if req.Query.Params.Limit.HasValue() {
-			limit = int(req.Query.Params.Limit.MustGetValue())
+		if req.Query.Params.Limit.IsPresent() {
+			limit = int(req.Query.Params.Limit.MustGet())
 		}
 
-		if req.Query.Params.Offset.HasValue() {
-			offset = int(req.Query.Params.Offset.MustGetValue())
+		if req.Query.Params.Offset.IsPresent() {
+			offset = int(req.Query.Params.Offset.MustGet())
 		}
 
 		HasMore := false
