@@ -62,7 +62,7 @@ require github.com/0B1t322/QueryParser v0.1.0
 // Replace for proto package
 
 require (
-	github.com/0B1t322/MongoBuilder v0.1.5
+	github.com/0B1t322/MongoBuilder v0.1.8
 	github.com/RTUITLab/ITLab v1.0.0
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
