@@ -39,7 +39,7 @@ type MongoRepository struct {
 	collectionName string
 }
 
-type MongoRepositoryOptions func (m *MongoRepository)
+type MongoRepositoryOptions func(m *MongoRepository)
 
 func WithCollectionName(collection string) MongoRepositoryOptions {
 	return func(m *MongoRepository) {
@@ -104,7 +104,7 @@ func New(
 		logrus.WithFields(
 			logrus.Fields{
 				"from": "NewReportsRepository",
-				"err": err,
+				"err":  err,
 			},
 		).Panic("Failed to migrate")
 	}
@@ -112,18 +112,13 @@ func New(
 	return r, nil
 }
 
-
-
 type MongoReportModel struct {
-	ID primitive.ObjectID `bson:"_id"`
-
-	Name string `bson:"name"`
-
-	Date time.Time `bson:"date"`
-
-	Text string `bson:"text"`
-
-	Assignees MongoAssignesModel `bson:"assignees"`
+	ID        primitive.ObjectID      `bson:"_id"`
+	Name      string                  `bson:"name"`
+	Date      time.Time               `bson:"date"`
+	Text      string                  `bson:"text"`
+	Assignees MongoAssignesModel      `bson:"assignees"`
+	State     modelReport.ReportState `bson:"state"`
 }
 
 type MongoAssignesModel struct {
@@ -134,13 +129,14 @@ type MongoAssignesModel struct {
 func (m MongoReportModel) ToAgragate() *report.Report {
 	return &report.Report{
 		Report: &Report{
-			ID: m.ID.Hex(),
-			Name: m.Name,
-			Date: m.Date,
-			Text: m.Text,
+			ID:    m.ID.Hex(),
+			Name:  m.Name,
+			Date:  m.Date,
+			Text:  m.Text,
+			State: m.State,
 		},
 		Assignees: &Assignees{
-			Reporter: m.Assignees.Reporter,
+			Reporter:    m.Assignees.Reporter,
 			Implementer: m.Assignees.Implementer,
 		},
 	}
@@ -152,9 +148,10 @@ func fromAgragate(report *report.Report) MongoReportModel {
 		Date: report.Report.Date,
 		Text: report.Report.Text,
 		Assignees: MongoAssignesModel{
-			Reporter: report.Assignees.Reporter,
+			Reporter:    report.Assignees.Reporter,
 			Implementer: report.Assignees.Implementer,
 		},
+		State: report.Report.State,
 	}
 }
 
@@ -184,7 +181,7 @@ func (m *MongoRepository) GetReport(
 
 		if err := sr.Err(); err == mongo.ErrNoDocuments {
 			return nil, domain.ErrReportNotFound
-		} else if err != nil{
+		} else if err != nil {
 			return nil, err
 		}
 
@@ -264,10 +261,10 @@ func (m *MongoRepository) BuildFilters(
 				&b,
 				"_id",
 				mongobuildertofilter.
-							NewBuilderQueryAdapterOptions[string]().
-							WithFieldFormatter(
-								mongobuildertofilter.StringIdMarshaller(),
-							),
+					NewBuilderQueryAdapterOptions[string]().
+					WithFieldFormatter(
+						mongobuildertofilter.StringIdMarshaller(),
+					),
 			),
 		)
 	}
@@ -326,7 +323,7 @@ func (m *MongoRepository) BuildFilters(
 					for _, f := range filter.Or {
 						preds = append(preds, m.BuildFilters(f))
 					}
-					
+
 					return preds
 				}()...,
 			),
@@ -341,7 +338,7 @@ func (m *MongoRepository) BuildFilters(
 					for _, f := range filter.And {
 						preds = append(preds, m.BuildFilters(f))
 					}
-					
+
 					return preds
 				}()...,
 			),
@@ -351,12 +348,11 @@ func (m *MongoRepository) BuildFilters(
 	return b
 }
 
-
 func (m *MongoRepository) BuildFindOptions(
-	params	*domain.GetReportsParams,
+	params *domain.GetReportsParams,
 ) *options.FindOptions {
 	opt := options.Find().
-				SetSort(m.BuildSort(params.Filter.SortParams))
+		SetSort(m.BuildSort(params.Filter.SortParams))
 
 	if params.Limit.IsPresent() {
 		opt.SetLimit(params.Limit.MustGet())
@@ -381,7 +377,7 @@ func (m *MongoRepository) BuildSort(
 		for _, s := range sortParams {
 			if s.NameSort.IsPresent() {
 				sortArgs = append(
-					sortArgs, 
+					sortArgs,
 					sort.SortArg(
 						"name",
 						ordertypetosortorder.ToSortOrder(s.NameSort.MustGet()),
@@ -391,7 +387,7 @@ func (m *MongoRepository) BuildSort(
 
 			if s.DateSort.IsPresent() {
 				sortArgs = append(
-					sortArgs, 
+					sortArgs,
 					sort.SortArg(
 						"date",
 						ordertypetosortorder.ToSortOrder(s.DateSort.MustGet()),
@@ -418,7 +414,7 @@ func (m *MongoRepository) GetReports(
 			return nil, err
 		}
 		defer cur.Close(ctx)
-		
+
 		if err := cur.All(ctx, &mgReports); err != nil {
 			return nil, err
 		}
@@ -467,8 +463,8 @@ func (m *MongoRepository) BuildUpdateFields(params domain.UpdateReportParams) bs
 }
 
 func (m *MongoRepository) UpdateReport(
-	ctx	context.Context,
-	id	string,
+	ctx context.Context,
+	id string,
 	params domain.UpdateReportParams,
 ) (*report.Report, error) {
 	mgId, err := m.getObjectID(id)
