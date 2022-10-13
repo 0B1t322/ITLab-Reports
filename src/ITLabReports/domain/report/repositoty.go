@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/RTUITLab/ITLab-Reports/aggragate/report"
+	rm "github.com/RTUITLab/ITLab-Reports/entity/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/filter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/ordertype"
 	"github.com/samber/mo"
@@ -48,6 +49,8 @@ type GetReportsFilterFields struct {
 	Implementer *filter.FilterField[string]
 
 	Reporter *filter.FilterField[string]
+
+	State *filter.FilterField[rm.ReportState]
 }
 
 type GetReportsSort struct {
