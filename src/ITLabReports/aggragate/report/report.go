@@ -41,22 +41,25 @@ func (r Report) GetReporter() string {
 	return r.Assignees.Reporter
 }
 
-
+func (r *Report) SetPaid() {
+	r.Report.State = report.ReportStatePaid
+}
 
 func NewReport(
-	name		string,
-	text		string,
-	reporter	string,
-	implementor	string,
+	name string,
+	text string,
+	reporter string,
+	implementor string,
 ) (*Report, error) {
 	report := &Report{
 		Report: &report.Report{
-			Name: name,
-			Text: text,
-			Date: time.Now().UTC().Round(time.Millisecond),
+			Name:  name,
+			Text:  text,
+			Date:  time.Now().UTC().Round(time.Millisecond),
+			State: report.ReportStateCreated,
 		},
 		Assignees: &assignees.Assignees{
-			Reporter: reporter,
+			Reporter:    reporter,
 			Implementer: implementor,
 		},
 	}
