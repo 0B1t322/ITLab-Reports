@@ -67,6 +67,23 @@ definitions:
       text:
         type: string
     type: object
+  dto.GetDraftRespV2:
+    properties:
+      count:
+        type: integer
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/dto.GetDraftResp'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      totalResult:
+        type: integer
+    type: object
   dto.GetDraftsResp:
     properties:
       drafts:
@@ -87,22 +104,12 @@ definitions:
       text:
         type: string
     type: object
-  dto.GetReportsRespV2:
+  dto.GetReportsResp:
     properties:
-      count:
-        type: integer
-      hasMore:
-        type: boolean
-      items:
+      reports:
         items:
-          $ref: '#/definitions/dto.GetReportResp'
+          $ref: '#/definitions/types.Report'
         type: array
-      limit:
-        type: integer
-      offset:
-        type: integer
-      totalResult:
-        type: integer
     type: object
   dto.UpdateDraftReq:
     properties:
@@ -122,6 +129,42 @@ definitions:
         $ref: '#/definitions/dto.GetAssignesResp'
       date:
         type: string
+      id:
+        type: string
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  timestamppb.Timestamp:
+    properties:
+      nanos:
+        description: |-
+          Non-negative fractions of a second at nanosecond resolution. Negative
+          second values with fractions must still have non-negative nanos values
+          that count forward in time. Must be from 0 to 999,999,999
+          inclusive.
+        type: integer
+      seconds:
+        description: |-
+          Represents seconds of UTC time since Unix epoch
+          1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+          9999-12-31T23:59:59Z inclusive.
+        type: integer
+    type: object
+  types.Assignees:
+    properties:
+      implementer:
+        type: string
+      reporter:
+        type: string
+    type: object
+  types.Report:
+    properties:
+      assignees:
+        $ref: '#/definitions/types.Assignees'
+      date:
+        $ref: '#/definitions/timestamppb.Timestamp'
       id:
         type: string
       name:
@@ -331,7 +374,7 @@ paths:
       - text/plain
       responses:
         "204":
-          description: ""
+          description: No Content
       security:
       - ApiKeyAuth: []
       summary: delete a draft
@@ -420,6 +463,38 @@ paths:
       summary: create report from draft
       tags:
       - reports
+  /reports/v2/draft:
+    get:
+      description: "# Description \n\n**Return a list of drafts**\n\n## Params\n###
+        Query\n1. `offset` - the offset of the searching should be greater or equal
+        0, else it will be ignore\n2. `limit` - the limit of getted reports, should
+        be greater or equal 1, else it will be ignore\n\n## Responce fields\n1. `count`
+        - the current count of elements in `items` field.\n2. `items` - the results
+        drafts.\n3. `hasMore` - indicate that you can get new drafts by increase `offset`
+        param.\n4. `limit` - the passed `limit` param.\n5. `offset` - the passed `offset`
+        param.\n6. `totalResult` - how mush drafts you can get by passing this request
+        with this filtering params."
+      parameters:
+      - description: offset
+        in: query
+        name: offset
+        type: number
+      - description: limit
+        in: query
+        name: limit
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetDraftRespV2'
+      security:
+      - ApiKeyAuth: []
+      summary: return drafts
+      tags:
+      - draft
   /reports/v2/reports:
     get:
       description: "# Description \n\n**Return a list of reports**\n\n## Params\n###
@@ -487,7 +562,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetReportsRespV2'
+            $ref: '#/definitions/dto.GetReportsResp'
       security:
       - ApiKeyAuth: []
       summary: return reports according to filters

@@ -316,7 +316,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     }
                 }
             }
@@ -350,6 +350,45 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/dto.CreateReportResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/v2/draft": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "# Description \n\n**Return a list of drafts**\n\n## Params\n### Query\n1. ` + "`" + `offset` + "`" + ` - the offset of the searching should be greater or equal 0, else it will be ignore\n2. ` + "`" + `limit` + "`" + ` - the limit of getted reports, should be greater or equal 1, else it will be ignore\n\n## Responce fields\n1. ` + "`" + `count` + "`" + ` - the current count of elements in ` + "`" + `items` + "`" + ` field.\n2. ` + "`" + `items` + "`" + ` - the results drafts.\n3. ` + "`" + `hasMore` + "`" + ` - indicate that you can get new drafts by increase ` + "`" + `offset` + "`" + ` param.\n4. ` + "`" + `limit` + "`" + ` - the passed ` + "`" + `limit` + "`" + ` param.\n5. ` + "`" + `offset` + "`" + ` - the passed ` + "`" + `offset` + "`" + ` param.\n6. ` + "`" + `totalResult` + "`" + ` - how mush drafts you can get by passing this request with this filtering params.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "draft"
+                ],
+                "summary": "return drafts",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetDraftRespV2"
                         }
                     }
                 }
@@ -422,7 +461,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetReportsRespV2"
+                            "$ref": "#/definitions/dto.GetReportsResp"
                         }
                     }
                 }
@@ -568,6 +607,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.GetDraftRespV2": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GetDraftResp"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "totalResult": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.GetDraftsResp": {
             "type": "object",
             "properties": {
@@ -599,29 +664,14 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.GetReportsRespV2": {
+        "dto.GetReportsResp": {
             "type": "object",
             "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "hasMore": {
-                    "type": "boolean"
-                },
-                "items": {
+                "reports": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.GetReportResp"
+                        "$ref": "#/definitions/types.Report"
                     }
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "totalResult": {
-                    "type": "integer"
                 }
             }
         },
@@ -650,6 +700,50 @@ const docTemplate = `{
                 },
                 "date": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "timestamppb.Timestamp": {
+            "type": "object",
+            "properties": {
+                "nanos": {
+                    "description": "Non-negative fractions of a second at nanosecond resolution. Negative\nsecond values with fractions must still have non-negative nanos values\nthat count forward in time. Must be from 0 to 999,999,999\ninclusive.",
+                    "type": "integer"
+                },
+                "seconds": {
+                    "description": "Represents seconds of UTC time since Unix epoch\n1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n9999-12-31T23:59:59Z inclusive.",
+                    "type": "integer"
+                }
+            }
+        },
+        "types.Assignees": {
+            "type": "object",
+            "properties": {
+                "implementer": {
+                    "type": "string"
+                },
+                "reporter": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Report": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/types.Assignees"
+                },
+                "date": {
+                    "$ref": "#/definitions/timestamppb.Timestamp"
                 },
                 "id": {
                     "type": "string"
