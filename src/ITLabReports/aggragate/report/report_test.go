@@ -29,6 +29,7 @@ func TestFunc_ReportCreate(t *testing.T) {
 						Name: "report_name",
 						Text: "some_text",
 						Date: r.Report.Date,
+						State: report.ReportStateCreated,
 					},
 					Assignees: &assignees.Assignees{
 						Reporter: "reporter_id",
