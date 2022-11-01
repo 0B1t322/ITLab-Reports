@@ -10,15 +10,11 @@ import (
 	modelReport "github.com/RTUITLab/ITLab-Reports/entity/report"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/mongobuildertofilter"
 	"github.com/RTUITLab/ITLab-Reports/pkg/adapters/ordertypetosortorder"
-	"github.com/sirupsen/logrus"
-	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
-
-	_ "github.com/RTUITLab/ITLab-Reports/migrations/mongo"
 
 	"github.com/0B1t322/MongoBuilder/operators/query"
 	"github.com/0B1t322/MongoBuilder/operators/sort"
@@ -98,17 +94,6 @@ func New(
 		r.collectionName = "reports"
 	}
 	r.reports = r.db.Collection(r.collectionName)
-
-	migrate.SetDatabase(r.db)
-	if err := migrate.Up(migrate.AllAvailable); err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"from": "NewReportsRepository",
-				"err":  err,
-			},
-		).Panic("Failed to migrate")
-	}
-
 	return r, nil
 }
 
@@ -118,7 +103,7 @@ type MongoReportModel struct {
 	Date      time.Time               `bson:"date"`
 	Text      string                  `bson:"text"`
 	Assignees MongoAssignesModel      `bson:"assignees"`
-	State     modelReport.ReportState `bson:"state"`
+	State     modelReport.ReportState `bson:"state,omitempty"`
 }
 
 type MongoAssignesModel struct {

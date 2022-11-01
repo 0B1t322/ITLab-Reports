@@ -57,23 +57,3 @@ func init() {
 		},
 	)
 }
-
-/*
-db.reports.aggregate(
-    [
-        {
-
-          $set: {
-            "date": {
-                "$cond": [
-                    // if
-                    {"$eq": [{"$type": "$date"}, "string"]},
-                    {$toDate: {"$concat": ["$date", 'Z']}},
-                    "$date"
-                ]
-            }
-          }  
-        },
-    ]
-)
-*/
