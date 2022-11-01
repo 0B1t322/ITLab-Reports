@@ -5,25 +5,25 @@ import (
 	"encoding/json"
 	"net/http"
 
-	v1 "github.com/RTUITLab/ITLab-Reports/transport/report/http/dto/v1"
+	"github.com/RTUITLab/ITLab-Reports/transport/draft/http/dto/v1"
 )
 
-type GetReportsResp struct {
+type GetDraftsResp struct {
 	Count       int                 `json:"count"`
 	HasMore     bool                `json:"hasMore"`
-	Items       []*v1.GetReportResp `json:"items"`
+	Items       []*dto.GetDraftResp `json:"items"`
 	Limit       int                 `json:"limit"`
 	Offset      int                 `json:"offset"`
 	TotalResult int                 `json:"totalResult"`
-} //@name dto.GetReportsRespV2
+} //@name dto.GetDraftRespV2
 
-func EncodeGetReportsResp(
+func EncodeGetDraftResp(
 	ctx context.Context,
 	w http.ResponseWriter,
-	resp *GetReportsResp,
+	resp *GetDraftsResp,
 ) error {
 	if resp.Items == nil {
-		resp.Items = []*v1.GetReportResp{}
+		resp.Items = []*dto.GetDraftResp{}
 	}
 
 	w.Header().Add("Content-Type", "application/json")
