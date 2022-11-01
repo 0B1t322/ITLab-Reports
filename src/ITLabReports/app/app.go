@@ -129,7 +129,8 @@ func (a *App) buildSalaryService() {
 
 func (a *App) BuildHTTP() {
 	draftHTTPEndpoints := a.BuildDraftsHTTPV1(a.DraftEndpoints)
-
+	a.BuildDraftsHTTPV2(a.DraftEndpoints)
+	
 	a.BuildReportsHTTPV1(a.ReportEndpoints, ToDraftService(draftHTTPEndpoints))
 	a.BuildReportsHTTPV2(a.ReportEndpoints)
 
@@ -143,6 +144,7 @@ func (a *App) BuildGRPC() {
 	grpcServer := grpc.NewServer()
 
 	pb.RegisterReportsServer(grpcServer, a.BuildReportsGRPCV1(a.ReportEndpoints))
+	pb.RegisterDraftsServer(grpcServer, a.BuildDraftGRPCV1(a.DraftEndpoints))
 
 	a.GRPCServer = grpcServer
 }
