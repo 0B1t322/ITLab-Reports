@@ -12,25 +12,27 @@ import (
 	"github.com/RTUITLab/ITLab-Reports/service/idvalidator"
 	"github.com/RTUITLab/ITLab-Reports/service/reports"
 	"github.com/RTUITLab/ITLab-Reports/service/salary"
+	"github.com/RTUITLab/ITLab-Reports/service/token"
 	"github.com/RTUITLab/ITLab-Reports/transport/middlewares"
 	"github.com/RTUITLab/ITLab-Reports/transport/report"
 	pb "github.com/RTUITLab/ITLab/proto/reports/v1"
+	salaryGrpc "github.com/RTUITLab/ITLab/proto/salary/v1"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	swag "github.com/swaggo/http-swagger"
 	"google.golang.org/grpc"
-	salaryGrpc "github.com/RTUITLab/ITLab/proto/salary/v1"
 )
 
 type App struct {
-	Router        *mux.Router
-	GRPCServer    *grpc.Server
+	Router     *mux.Router
+	GRPCServer *grpc.Server
+
 	Auther        middlewares.Auther
 	IdChecker     middlewares.IdChecker
 	SalaryService salary.SalaryService
-
 	ReportService reports.Service
 	DraftService  reports.Service
+	TokenService  token.TokenService
 
 	ReportEndpoints report.Endpoints
 	DraftEndpoints  report.Endpoints
@@ -59,6 +61,13 @@ func New(cfg *config.Config) *App {
 	app.buildIdChecker()
 	// Build salary service
 	app.buildSalaryService()
+	app.buildTokenService()
+
+	// Confgigure database
+	if err := app.configureMongoDatabase(); err != nil {
+		log.Panicf("Failed to configure database: %v", err)
+	}
+
 	// Build services
 	if err := app.BuildReportService(); err != nil {
 		log.Panicf("Failed to build app: %v", err)
@@ -127,10 +136,27 @@ func (a *App) buildSalaryService() {
 	}
 }
 
+func (a *App) buildTokenService() {
+	if !a.cfg.App.TestMode {
+		tokenService, err := token.NewExternalTokenService(
+			a.cfg.RemoteApi.ClientID,
+			a.cfg.RemoteApi.ClientSecret,
+			a.cfg.RemoteApi.TokenURL,
+		)
+		if err != nil {
+			log.Panicf("Failed to build token service: %v", err)
+		}
+
+		a.TokenService = tokenService
+	} else {
+		a.TokenService = token.NewTestTokenService()
+	}
+}
+
 func (a *App) BuildHTTP() {
 	draftHTTPEndpoints := a.BuildDraftsHTTPV1(a.DraftEndpoints)
 	a.BuildDraftsHTTPV2(a.DraftEndpoints)
-	
+
 	a.BuildReportsHTTPV1(a.ReportEndpoints, ToDraftService(draftHTTPEndpoints))
 	a.BuildReportsHTTPV2(a.ReportEndpoints)
 

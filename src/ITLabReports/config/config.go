@@ -12,7 +12,7 @@ type MongoDBConfig struct {
 }
 
 type AppConfig struct {
-	AppPort string `envconfig:"ITLAB_REPORTS_APP_PORT"`
+	AppPort string `default:"8080" envconfig:"ITLAB_REPORTS_APP_PORT"`
 
 	TestMode bool `envconfig:"ITLAB_REPORTS_APP_TEST_MODE"`
 
@@ -24,9 +24,16 @@ type AppConfig struct {
 }
 
 type Config struct {
-	MongoDB MongoDBConfig
-	App     AppConfig
-	Auth    AuthConfig
+	MongoDB   MongoDBConfig
+	App       AppConfig
+	Auth      AuthConfig
+	RemoteApi RemoteApiConfig
+}
+
+type RemoteApiConfig struct {
+	ClientSecret string `envconfig:"ITLAB_REPORTS_REMOTE_API_CLIENT_SECRET"`
+	TokenURL     string `envconfig:"ITLAB_REPORTS_REMOTE_API_TOKEN_URL"`
+	ClientID     string `envconfig:"ITLAB_REPORTS_REMOTE_API_CLIENT_ID"`
 }
 
 type AuthConfig struct {
