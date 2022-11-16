@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
+	"github.com/RTUITLab/ITLab-Reports/internal/common/errors"
 	"github.com/stretchr/testify/require"
 )
 
