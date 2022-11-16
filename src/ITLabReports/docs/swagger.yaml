@@ -1,16 +1,19 @@
 basePath: /api
 definitions:
-  dto.CreateDraftReq:
+  drafts.CreateDraftReq:
     properties:
       name:
         type: string
       text:
         type: string
+    required:
+    - name
+    - text
     type: object
-  dto.CreateDraftResp:
+  drafts.DraftView:
     properties:
       assignees:
-        $ref: '#/definitions/dto.GetAssignesResp'
+        $ref: '#/definitions/view.AssigneesView'
       date:
         type: string
       id:
@@ -20,54 +23,47 @@ definitions:
       text:
         type: string
     type: object
-  dto.CreateReportReq:
+  drafts.DraftsView:
     properties:
-      name:
-        type: string
-      text:
-        type: string
+      drafts:
+        items:
+          $ref: '#/definitions/view.DraftView'
+        type: array
     type: object
-  dto.CreateReportResp:
-    properties:
-      assignees:
-        $ref: '#/definitions/dto.GetAssigneesResp'
-      date:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      text:
-        type: string
-    type: object
-  dto.GetAssigneesResp:
+  drafts.UpdateDraftReq:
     properties:
       implementer:
         type: string
-      reporter:
-        type: string
-    type: object
-  dto.GetAssignesResp:
-    properties:
-      implementer:
-        type: string
-      reporter:
-        type: string
-    type: object
-  dto.GetDraftResp:
-    properties:
-      assignees:
-        $ref: '#/definitions/dto.GetAssignesResp'
-      date:
-        type: string
-      id:
-        type: string
       name:
         type: string
       text:
         type: string
     type: object
-  dto.GetDraftRespV2:
+  dto.GetDraftsResp:
+    properties:
+      count:
+        type: integer
+      has_more:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/view.DraftView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  reports.CreateReportReq:
+    properties:
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  reports.GetReportsResp:
     properties:
       count:
         type: integer
@@ -75,7 +71,7 @@ definitions:
         type: boolean
       items:
         items:
-          $ref: '#/definitions/dto.GetDraftResp'
+          $ref: '#/definitions/view.ReportView'
         type: array
       limit:
         type: integer
@@ -84,17 +80,10 @@ definitions:
       totalResult:
         type: integer
     type: object
-  dto.GetDraftsResp:
-    properties:
-      drafts:
-        items:
-          $ref: '#/definitions/dto.GetDraftResp'
-        type: array
-    type: object
-  dto.GetReportResp:
+  reports.ReportView:
     properties:
       assignees:
-        $ref: '#/definitions/dto.GetAssigneesResp'
+        $ref: '#/definitions/view.AssigneesView'
       date:
         type: string
       id:
@@ -104,67 +93,32 @@ definitions:
       text:
         type: string
     type: object
-  dto.GetReportsResp:
-    properties:
-      reports:
-        items:
-          $ref: '#/definitions/types.Report'
-        type: array
-    type: object
-  dto.UpdateDraftReq:
-    properties:
-      implementer:
-        type: string
-        x-nullable: true
-      name:
-        type: string
-        x-nullable: true
-      text:
-        type: string
-        x-nullable: true
-    type: object
-  dto.UpdateDraftResp:
-    properties:
-      assignees:
-        $ref: '#/definitions/dto.GetAssignesResp'
-      date:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      text:
-        type: string
-    type: object
-  timestamppb.Timestamp:
-    properties:
-      nanos:
-        description: |-
-          Non-negative fractions of a second at nanosecond resolution. Negative
-          second values with fractions must still have non-negative nanos values
-          that count forward in time. Must be from 0 to 999,999,999
-          inclusive.
-        type: integer
-      seconds:
-        description: |-
-          Represents seconds of UTC time since Unix epoch
-          1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
-          9999-12-31T23:59:59Z inclusive.
-        type: integer
-    type: object
-  types.Assignees:
+  view.AssigneesView:
     properties:
       implementer:
         type: string
       reporter:
         type: string
     type: object
-  types.Report:
+  view.DraftView:
     properties:
       assignees:
-        $ref: '#/definitions/types.Assignees'
+        $ref: '#/definitions/view.AssigneesView'
       date:
-        $ref: '#/definitions/timestamppb.Timestamp'
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  view.ReportView:
+    properties:
+      assignees:
+        $ref: '#/definitions/view.AssigneesView'
+      date:
+        type: string
       id:
         type: string
       name:
@@ -187,7 +141,7 @@ info:
     }
     ```
   title: ITLab-Reports API
-  version: "1.0"
+  version: "2.0"
 paths:
   /reports:
     get:
@@ -210,7 +164,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.GetReportResp'
+              $ref: '#/definitions/reports.ReportView'
             type: array
       security:
       - ApiKeyAuth: []
@@ -239,14 +193,14 @@ paths:
         name: report
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateReportReq'
+          $ref: '#/definitions/reports.CreateReportReq'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CreateReportResp'
+            $ref: '#/definitions/reports.ReportView'
       security:
       - ApiKeyAuth: []
       summary: create report
@@ -270,7 +224,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetReportResp'
+            $ref: '#/definitions/reports.ReportView'
       security:
       - ApiKeyAuth: []
       summary: return report
@@ -303,7 +257,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.GetReportResp'
+              $ref: '#/definitions/reports.ReportView'
             type: array
       security:
       - ApiKeyAuth: []
@@ -320,7 +274,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetDraftsResp'
+            $ref: '#/definitions/drafts.DraftsView'
       security:
       - ApiKeyAuth: []
       summary: return a drafts for user
@@ -335,12 +289,12 @@ paths:
         that implements this draft\n\n## Errors\n### 400 - Bad Request\n1. If `text`
         or `name` is empty\n"
       parameters:
-      - description: a body
+      - description: body
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateDraftReq'
+          $ref: '#/definitions/drafts.CreateDraftReq'
       - description: a id of implementer
         in: query
         name: implementer
@@ -351,7 +305,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CreateDraftResp'
+            $ref: '#/definitions/drafts.DraftView'
       security:
       - ApiKeyAuth: []
       summary: create a draft
@@ -397,7 +351,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetDraftResp'
+            $ref: '#/definitions/drafts.DraftView'
       security:
       - ApiKeyAuth: []
       summary: return a draft
@@ -425,14 +379,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateDraftReq'
+          $ref: '#/definitions/drafts.UpdateDraftReq'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UpdateDraftResp'
+            $ref: '#/definitions/drafts.DraftView'
       security:
       - ApiKeyAuth: []
       summary: update a draft
@@ -457,7 +411,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CreateReportResp'
+            $ref: '#/definitions/reports.ReportView'
       security:
       - ApiKeyAuth: []
       summary: create report from draft
@@ -489,7 +443,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetDraftRespV2'
+            $ref: '#/definitions/dto.GetDraftsResp'
       security:
       - ApiKeyAuth: []
       summary: return drafts
@@ -562,7 +516,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.GetReportsResp'
+            $ref: '#/definitions/reports.GetReportsResp'
       security:
       - ApiKeyAuth: []
       summary: return reports according to filters

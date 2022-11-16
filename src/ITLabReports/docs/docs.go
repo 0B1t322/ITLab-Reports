@@ -49,7 +49,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.GetReportResp"
+                                "$ref": "#/definitions/reports.ReportView"
                             }
                         }
                     }
@@ -82,7 +82,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateReportReq"
+                            "$ref": "#/definitions/reports.CreateReportReq"
                         }
                     }
                 ],
@@ -90,7 +90,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateReportResp"
+                            "$ref": "#/definitions/reports.ReportView"
                         }
                     }
                 }
@@ -138,7 +138,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.GetReportResp"
+                                "$ref": "#/definitions/reports.ReportView"
                             }
                         }
                     }
@@ -164,7 +164,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetDraftsResp"
+                            "$ref": "#/definitions/drafts.DraftsView"
                         }
                     }
                 }
@@ -188,12 +188,12 @@ const docTemplate = `{
                 "summary": "create a draft",
                 "parameters": [
                     {
-                        "description": "a body",
+                        "description": "body",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateDraftReq"
+                            "$ref": "#/definitions/drafts.CreateDraftReq"
                         }
                     },
                     {
@@ -207,7 +207,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateDraftResp"
+                            "$ref": "#/definitions/drafts.DraftView"
                         }
                     }
                 }
@@ -241,7 +241,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetDraftResp"
+                            "$ref": "#/definitions/drafts.DraftView"
                         }
                     }
                 }
@@ -277,7 +277,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateDraftReq"
+                            "$ref": "#/definitions/drafts.UpdateDraftReq"
                         }
                     }
                 ],
@@ -285,7 +285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateDraftResp"
+                            "$ref": "#/definitions/drafts.DraftView"
                         }
                     }
                 }
@@ -349,7 +349,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateReportResp"
+                            "$ref": "#/definitions/reports.ReportView"
                         }
                     }
                 }
@@ -388,7 +388,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetDraftRespV2"
+                            "$ref": "#/definitions/dto.GetDraftsResp"
                         }
                     }
                 }
@@ -461,7 +461,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetReportsResp"
+                            "$ref": "#/definitions/reports.GetReportsResp"
                         }
                     }
                 }
@@ -495,7 +495,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.GetReportResp"
+                            "$ref": "#/definitions/reports.ReportView"
                         }
                     }
                 }
@@ -503,8 +503,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateDraftReq": {
+        "drafts.CreateDraftReq": {
             "type": "object",
+            "required": [
+                "name",
+                "text"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -514,11 +518,11 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateDraftResp": {
+        "drafts.DraftView": {
             "type": "object",
             "properties": {
                 "assignees": {
-                    "$ref": "#/definitions/dto.GetAssignesResp"
+                    "$ref": "#/definitions/view.AssigneesView"
                 },
                 "date": {
                     "type": "string"
@@ -534,71 +538,23 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateReportReq": {
+        "drafts.DraftsView": {
             "type": "object",
             "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
+                "drafts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/view.DraftView"
+                    }
                 }
             }
         },
-        "dto.CreateReportResp": {
-            "type": "object",
-            "properties": {
-                "assignees": {
-                    "$ref": "#/definitions/dto.GetAssigneesResp"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.GetAssigneesResp": {
+        "drafts.UpdateDraftReq": {
             "type": "object",
             "properties": {
                 "implementer": {
                     "type": "string"
                 },
-                "reporter": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.GetAssignesResp": {
-            "type": "object",
-            "properties": {
-                "implementer": {
-                    "type": "string"
-                },
-                "reporter": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.GetDraftResp": {
-            "type": "object",
-            "properties": {
-                "assignees": {
-                    "$ref": "#/definitions/dto.GetAssignesResp"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -607,7 +563,44 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.GetDraftRespV2": {
+        "dto.GetDraftsResp": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/view.DraftView"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "reports.CreateReportReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "reports.GetReportsResp": {
             "type": "object",
             "properties": {
                 "count": {
@@ -619,7 +612,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.GetDraftResp"
+                        "$ref": "#/definitions/view.ReportView"
                     }
                 },
                 "limit": {
@@ -633,22 +626,11 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.GetDraftsResp": {
-            "type": "object",
-            "properties": {
-                "drafts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.GetDraftResp"
-                    }
-                }
-            }
-        },
-        "dto.GetReportResp": {
+        "reports.ReportView": {
             "type": "object",
             "properties": {
                 "assignees": {
-                    "$ref": "#/definitions/dto.GetAssigneesResp"
+                    "$ref": "#/definitions/view.AssigneesView"
                 },
                 "date": {
                     "type": "string"
@@ -664,68 +646,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.GetReportsResp": {
-            "type": "object",
-            "properties": {
-                "reports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.Report"
-                    }
-                }
-            }
-        },
-        "dto.UpdateDraftReq": {
-            "type": "object",
-            "properties": {
-                "implementer": {
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "name": {
-                    "type": "string",
-                    "x-nullable": true
-                },
-                "text": {
-                    "type": "string",
-                    "x-nullable": true
-                }
-            }
-        },
-        "dto.UpdateDraftResp": {
-            "type": "object",
-            "properties": {
-                "assignees": {
-                    "$ref": "#/definitions/dto.GetAssignesResp"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "timestamppb.Timestamp": {
-            "type": "object",
-            "properties": {
-                "nanos": {
-                    "description": "Non-negative fractions of a second at nanosecond resolution. Negative\nsecond values with fractions must still have non-negative nanos values\nthat count forward in time. Must be from 0 to 999,999,999\ninclusive.",
-                    "type": "integer"
-                },
-                "seconds": {
-                    "description": "Represents seconds of UTC time since Unix epoch\n1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n9999-12-31T23:59:59Z inclusive.",
-                    "type": "integer"
-                }
-            }
-        },
-        "types.Assignees": {
+        "view.AssigneesView": {
             "type": "object",
             "properties": {
                 "implementer": {
@@ -736,14 +657,34 @@ const docTemplate = `{
                 }
             }
         },
-        "types.Report": {
+        "view.DraftView": {
             "type": "object",
             "properties": {
                 "assignees": {
-                    "$ref": "#/definitions/types.Assignees"
+                    "$ref": "#/definitions/view.AssigneesView"
                 },
                 "date": {
-                    "$ref": "#/definitions/timestamppb.Timestamp"
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "view.ReportView": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "$ref": "#/definitions/view.AssigneesView"
+                },
+                "date": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
@@ -768,7 +709,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "2.0",
 	Host:             "",
 	BasePath:         "/api",
 	Schemes:          []string{},
