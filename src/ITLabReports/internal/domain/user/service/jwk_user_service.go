@@ -147,10 +147,8 @@ func (s *JWKUserService) AuthUser(
 		return aggregate.User{}, err
 	}
 
-	userId, err := s.GetUserID(claim)
-	if err != nil {
-		return aggregate.User{}, err
-	}
+	// MARK: ignore error, while we not decide how to hand other service auth
+	userId, _ := s.GetUserID(claim)
 
 	user, err := aggregate.NewUser(
 		fmt.Sprint(userId),
