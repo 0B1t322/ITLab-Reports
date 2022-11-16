@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/RTUITLab/ITLab-Reports/internal/common/errors"
 	"github.com/RTUITLab/ITLab-Reports/internal/services/idvalidator"
-	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 

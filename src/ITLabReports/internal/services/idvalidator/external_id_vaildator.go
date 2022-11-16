@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/RTUITLab/ITLab-Reports/pkg/errors"
+	"github.com/RTUITLab/ITLab-Reports/internal/common/errors"
 )
 
 type externalRestIdValidator struct {
@@ -17,7 +17,7 @@ type externalRestIdValidator struct {
 }
 
 // ExternalRestIDValidator create id validator that validate by external rest interface
-// 
+//
 // client param can be nil
 func ExternalRestIDValidator(
 	baseUrl string,
@@ -41,7 +41,7 @@ func (s *externalRestIdValidator) ValidateIds(
 	ctx context.Context,
 	token string,
 	ids []string,
-) (error) {
+) error {
 	body := &bytes.Buffer{}
 	{
 		if err := json.NewEncoder(body).Encode(ids); err != nil {
@@ -51,7 +51,7 @@ func (s *externalRestIdValidator) ValidateIds(
 
 	req, err := http.NewRequest(
 		http.MethodPost,
-		s.baseUrl + "/api/User/checkUserIds",
+		s.baseUrl+"/api/User/checkUserIds",
 		body,
 	)
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *externalRestIdValidator) ValidateIds(
 
 	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-Type", "application/json")
-	
+
 	resp, err := s.client.Do(
 		req,
 	)
