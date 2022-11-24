@@ -72,6 +72,9 @@ func (rc *ReportsController) HandlerError(c *gin.Context, err error) {
 		logrus.WithFields(
 			logrus.Fields{
 				"controller": "reports",
+				"transport":  "http",
+				"version":    "v2",
+				"handler":    c.HandlerName(),
 			},
 		).Error(err)
 		rc.FormatError(c, err, http.StatusInternalServerError)
