@@ -224,6 +224,7 @@ func (r *ReportsServiceImpl) SetReportPaid(
 		ctx,
 		GetReportReq{
 			ID: req.ID,
+			By: req.By,
 		},
 	)
 	if err == ErrReportNotFound {

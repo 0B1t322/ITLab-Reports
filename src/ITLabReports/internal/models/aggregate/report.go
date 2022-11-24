@@ -55,7 +55,7 @@ func (r Report) SetAssignees(reporter string, implementer string) {
 	r.Assignees.Implementer = implementer
 }
 
-func (r Report) SetPaid() {
+func (r *Report) SetPaid() {
 	r.State = ReportStatePaid
 }
 
