@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 
 	_ "github.com/RTUITLab/ITLab-Reports/docs"
@@ -11,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
 )
 
 type App struct {
@@ -26,7 +28,7 @@ func NewApp(cfg config.Config) *App {
 	}
 }
 
-func (a *App) configureDependencies() {
+func (a *App) ConfigureDependencies() {
 	a.configureExternalServices()
 	a.configureDatabase()
 	a.configureRepositories()
@@ -34,8 +36,6 @@ func (a *App) configureDependencies() {
 }
 
 func (a *App) RunHTTP() {
-	a.configureDependencies()
-
 	app := gin.New()
 
 	if !a.cfg.App.TestMode {
@@ -65,5 +65,23 @@ func (a *App) RunHTTP() {
 	logrus.Infof("Start HTTP application on port :%s", a.cfg.App.AppPort)
 	if err := app.Run(fmt.Sprintf(":%s", a.cfg.App.AppPort)); err != nil {
 		logrus.Panic("Failed to start HTTP application: ", err)
+	}
+}
+
+func (a *App) RunGRPC() {
+	srv := grpc.NewServer()
+
+	for _, controller := range a.configureGRPCControllers() {
+		controller.Build(srv)
+	}
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", a.cfg.App.GrpcAppPort))
+	if err != nil {
+		logrus.Panic("Failed to listen: ", err)
+	}
+
+	logrus.Infof("Start GRPC application on port :%s", a.cfg.App.GrpcAppPort)
+	if err := srv.Serve(lis); err != nil {
+		logrus.Panic("Failed to start GRPC application: ", err)
 	}
 }

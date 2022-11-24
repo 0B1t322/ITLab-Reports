@@ -5,7 +5,6 @@ import (
 	draftsv2 "github.com/RTUITLab/ITLab-Reports/internal/controllers/http/drafts/v2"
 	reportsv1 "github.com/RTUITLab/ITLab-Reports/internal/controllers/http/reports/v1"
 	reportsv2 "github.com/RTUITLab/ITLab-Reports/internal/controllers/http/reports/v2"
-	"github.com/samber/do"
 	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
@@ -24,12 +23,6 @@ func (a *App) configureHTTPControllers() []IHTTPController {
 	}
 }
 
-func (a *App) configureHTTPControllerOptions() {
-	// Configure reports approved strategy
-	do.Provide(
-		a.injector,
-		func(i *do.Injector) (reportsv2.ApprovedStateStrategy, error) {
-			return reportsv2.NewExternalApprovedStrategyFrom(i)
-		},
-	)
+func (a *App) ConfigureHTTPControllerOptions() {
+
 }
