@@ -7,6 +7,7 @@ import (
 	user "github.com/RTUITLab/ITLab-Reports/internal/domain/user/service"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/do"
+	"github.com/sirupsen/logrus"
 )
 
 type DraftsController struct {
@@ -55,6 +56,14 @@ func (dc *DraftsController) HandlerError(c *gin.Context, err error) {
 
 	switch {
 	default:
+		logrus.WithFields(
+			logrus.Fields{
+				"controller": "drafts",
+				"transport":  "http",
+				"version":    "v2",
+				"handler":    c.HandlerName(),
+			},
+		).Error(err)
 		dc.ErrorFormatter.FormatError(c, err, http.StatusInternalServerError)
 		return
 	}

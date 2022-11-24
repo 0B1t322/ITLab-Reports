@@ -3,10 +3,14 @@ package reports
 import (
 	"net/http"
 
+	"github.com/RTUITLab/ITLab-Reports/internal/controllers/http/reports/v2/dto"
 	reports "github.com/RTUITLab/ITLab-Reports/internal/domain/reports/service"
 	user "github.com/RTUITLab/ITLab-Reports/internal/domain/user/service"
+	"github.com/RTUITLab/ITLab-Reports/internal/models/aggregate"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/do"
+	"github.com/samber/lo"
+	"github.com/samber/mo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -70,6 +74,8 @@ func (rc *ReportsController) HandlerError(c *gin.Context, err error) {
 			logrus.Fields{
 				"controller": "reports",
 				"version":    "v2",
+				"transport":  "http",
+				"handler":    c.HandlerName(),
 			},
 		).Error(err)
 		rc.FormatError(c, err, http.StatusInternalServerError)
@@ -130,7 +136,20 @@ func (rc *ReportsController) GetReports(c *gin.Context) {
 		return
 	}
 
-	approvedStateQuery, err := rc.approvedStrategy.SetApproved(ApprovedStateReq{})
+	approvedStateQuery, err := rc.approvedStrategy.SetApproved(
+		ApprovedStateReq{
+			State: lo.Switch[dto.ApprovedState, aggregate.ReportState](req.ApprovedState).
+				Case(dto.ApprovedState_Approved, aggregate.ReportStatePaid).
+				Case(dto.ApprovedState_Not, aggregate.ReportStateCreated).
+				Default("unknown"),
+			Token: c.GetHeader("Authorization"),
+			UserID: lo.Ternary(
+				user.IsAdminOrSuperAdmin(),
+				mo.None[string](),
+				mo.Some(user.ID),
+			),
+		},
+	)
 	if err != nil {
 		rc.FormatError(c, err, http.StatusConflict)
 		return

@@ -78,6 +78,8 @@ func (dc *DraftsController) HandlerError(c *gin.Context, err error) {
 		logrus.WithFields(
 			logrus.Fields{
 				"controller": "drafts",
+				"transport":  "http",
+				"handler":    c.HandlerName(),
 			},
 		).Error(err)
 		dc.FormatError(c, err, http.StatusInternalServerError)

@@ -3,8 +3,8 @@ package drafts
 import (
 	"github.com/RTUITLab/ITLab-Reports/internal/controllers/http/drafts/v2/dto"
 	"github.com/RTUITLab/ITLab-Reports/internal/controllers/http/shared/errors"
-	"github.com/RTUITLab/ITLab-Reports/internal/controllers/http/shared/utils"
 	"github.com/RTUITLab/ITLab-Reports/internal/controllers/http/shared/view"
+	"github.com/RTUITLab/ITLab-Reports/internal/controllers/shared/utils"
 )
 
 type (

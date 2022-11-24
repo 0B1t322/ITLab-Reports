@@ -1,6 +1,7 @@
 package drafts
 
 import (
+	"github.com/0B1t322/RepoGen/pkg/filter"
 	"github.com/0B1t322/RepoGen/pkg/sortorder"
 	draftsrepo "github.com/RTUITLab/ITLab-Reports/internal/domain/drafts/repository"
 	drafts "github.com/RTUITLab/ITLab-Reports/internal/domain/drafts/service"
@@ -30,6 +31,14 @@ func (DraftsMarshaller) MarshallGetDraftsReq(
 			),
 			Sort: draftsrepo.SortBuilder().
 				Date(sortorder.DESC).
+				Build(),
+			Filter: draftsrepo.Query().
+				Expression(
+					draftsrepo.Expression().Reporter(
+						user.ID,
+						filter.EQ,
+					),
+				).
 				Build(),
 		},
 	}
