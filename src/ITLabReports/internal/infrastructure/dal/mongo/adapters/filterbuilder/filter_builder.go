@@ -78,6 +78,9 @@ func (f *FindOpeartionBuilder) BuildFilterField(
 		}
 		return query.In(fieldName, fieldValue)
 	case filter.NIN:
+		if array, ok := fieldValue.(bson.A); ok {
+			return query.Nin(fieldName, array...)
+		}
 		return query.Nin(fieldName, fieldValue)
 	}
 
